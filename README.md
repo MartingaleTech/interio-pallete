@@ -1,0 +1,307 @@
+# Interio Palette
+
+A multi-tenant SaaS platform connecting interior designers with homeowners in India.
+
+## Overview
+
+Interio Palette is a comprehensive platform that enables:
+- **Admin (Super Admin)** to manage interior design organizations
+- **Organizations (Interior Designers)** to manage projects, clients, team members, and invoices
+- **Clients (Homeowners)** to track their interior design projects in real-time
+
+## Features
+
+### Admin Dashboard
+- Add and manage interior design organizations
+- Manage organization members
+- View and manage organization subscriptions
+- Generate organization invoices
+- Track all organizations and their status
+
+### Organization Dashboard
+- Manage multiple projects
+- Add and manage clients (homeowners)
+- Assign team members to projects
+- Schedule meetings and milestones via calendar
+- Upload and share project designs
+- Create and track project invoices
+
+### Client Portal
+- View assigned projects
+- Track project progress
+- View project designs and documents
+- Access project calendar and milestones
+- View invoices
+
+## Architecture
+
+### Multi-Tenant Design
+Each interior design organization has its own isolated instance within the platform. Organizations can have multiple users (owner and members) and multiple projects, with each project linked to a client.
+
+### Authentication
+- Phone-based OTP authentication (currently mocked for development)
+- Role-based access control (Admin, Org Owner, Org Member, Client)
+- Secure token-based sessions
+
+### Tech Stack
+
+**Backend:**
+- FastAPI (Python web framework)
+- Pydantic (data validation)
+- bcrypt (password hashing)
+- In-memory database (proof of concept)
+
+**Frontend:**
+- React + TypeScript
+- Vite (build tool)
+- Tailwind CSS (styling)
+- shadcn/ui (UI components)
+- Lucide Icons
+
+## Getting Started
+
+### Prerequisites
+- Python 3.8+
+- Node.js 16+
+- Poetry (Python package manager)
+
+### Backend Setup
+
+1. Navigate to the backend directory:
+```bash
+cd backend
+```
+
+2. Install dependencies:
+```bash
+poetry install
+```
+
+3. Start the development server:
+```bash
+poetry run fastapi dev app/main.py
+```
+
+The backend will be available at `http://localhost:8000`
+
+API documentation is available at `http://localhost:8000/docs`
+
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+```bash
+cd frontend
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+The frontend will be available at `http://localhost:5173`
+
+## Usage Guide
+
+### Admin Login
+- Phone: `9999999999`
+- A mock OTP will be displayed after requesting it
+
+### Creating an Organization
+1. Log in as admin
+2. Click "Add Organization"
+3. Fill in the organization details and owner information
+4. The owner will receive phone-based OTP login credentials
+
+### Organization Owner Login
+Use the phone number provided during organization creation to log in via OTP.
+
+### Adding Clients
+1. Log in as organization owner/member
+2. Navigate to the "Clients" tab
+3. Click "Add Client"
+4. Provide client details including phone number
+5. Clients can now log in using their phone number
+
+### Managing Projects
+1. Create clients first
+2. Navigate to the "Projects" tab
+3. Click "New Project"
+4. Select a client and provide project details
+5. Add team members, calendar events, designs, and invoices as needed
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/phone/request-otp` - Request OTP for phone number
+- `POST /api/auth/phone/verify-otp` - Verify OTP and log in
+- `GET /api/auth/me` - Get current user
+- `POST /api/auth/logout` - Log out
+
+### Admin Endpoints
+- `POST /api/admin/organizations` - Create organization
+- `GET /api/admin/organizations` - List all organizations
+- `GET /api/admin/organizations/{org_id}` - Get organization details
+- `PATCH /api/admin/organizations/{org_id}` - Update organization
+- `DELETE /api/admin/organizations/{org_id}` - Delete organization
+- `GET /api/admin/organizations/{org_id}/members` - List organization members
+- `POST /api/admin/organizations/{org_id}/members` - Add member
+- `DELETE /api/admin/organizations/{org_id}/members/{user_id}` - Remove member
+- `POST /api/admin/organizations/{org_id}/invoices` - Create org invoice
+- `GET /api/admin/organizations/{org_id}/invoices` - List org invoices
+
+### Organization Endpoints
+- `POST /api/organizations/projects` - Create project
+- `GET /api/organizations/projects` - List projects
+- `GET /api/organizations/projects/{project_id}` - Get project details
+- `POST /api/organizations/clients` - Add client
+- `GET /api/organizations/clients` - List clients
+
+### Project Endpoints
+- `POST /api/projects/{project_id}/team` - Add team member
+- `GET /api/projects/{project_id}/team` - List team members
+- `POST /api/projects/{project_id}/calendar` - Create calendar event
+- `GET /api/projects/{project_id}/calendar` - List calendar events
+- `POST /api/projects/{project_id}/designs` - Upload design
+- `GET /api/projects/{project_id}/designs` - List designs
+- `POST /api/projects/{project_id}/invoices` - Create invoice
+- `GET /api/projects/{project_id}/invoices` - List invoices
+
+### Client Endpoints
+- `GET /api/clients/projects` - List client's projects
+
+## Data Models
+
+### User
+- id, email, name, role, org_id, phone, created_at
+
+### Organization
+- id, name, email, phone, address, city, state, pincode
+- owner_id, subscription_status, subscription_plan
+- subscription_start, subscription_end, created_at
+
+### Project
+- id, org_id, name, description, status
+- client_id, client_name, budget
+- start_date, end_date, created_at
+
+### Client
+- id, org_id, name, email, phone, address, created_at
+
+### Team Member
+- id, project_id, user_id, name, role
+
+### Calendar Event
+- id, project_id, title, description, event_type
+- start_time, end_time, attendees, created_at
+
+### Project Design
+- id, project_id, title, description
+- file_url, file_type, uploaded_by, uploaded_at
+
+### Invoice
+- id, project_id, org_id, invoice_number
+- amount, tax, total, payment_status
+- due_date, paid_date, created_at
+
+## Development Notes
+
+### In-Memory Database
+Currently, the platform uses an in-memory database for proof of concept. This means:
+- Data is lost when the server restarts
+- Not suitable for production use
+- Easy migration to PostgreSQL, MongoDB, or other databases
+
+### Mock OTP
+The OTP system is mocked for development. The OTP is:
+- Printed to the backend console
+- Returned in the API response (for demo purposes)
+- Valid for 10 minutes
+
+For production, integrate with SMS providers like:
+- Twilio
+- AWS SNS
+- Firebase Auth
+- MSG91 (popular in India)
+
+### File Uploads
+File upload functionality is planned but not yet implemented. For production:
+- Use cloud storage (AWS S3, Google Cloud Storage, Azure Blob)
+- Implement file validation and security
+- Add support for images, PDFs, 3D models
+
+### Payment Integration
+Payment processing placeholders are included. For production, integrate with:
+- Razorpay (popular in India)
+- Stripe
+- PayU
+- Paytm
+
+## Future Enhancements
+
+- Real database integration (PostgreSQL recommended)
+- Real SMS/OTP provider integration
+- File upload and storage
+- Payment gateway integration
+- Advanced calendar with reminders
+- Real-time notifications
+- Mobile app (React Native)
+- Analytics and reporting
+- Document e-signing
+- Chat/messaging between designers and clients
+- 3D design viewer
+
+## Security Considerations
+
+- All passwords are hashed using bcrypt
+- Token-based authentication
+- Role-based access control
+- CORS enabled for development (restrict in production)
+- Environment variables for sensitive data
+- Input validation using Pydantic
+
+## Deployment
+
+### Backend Deployment
+The backend can be deployed to:
+- Fly.io (recommended)
+- Heroku
+- AWS EC2
+- Google Cloud Run
+- Railway
+
+Make sure to:
+- Set up environment variables
+- Use a proper database (PostgreSQL)
+- Enable HTTPS
+- Configure CORS properly
+- Set up monitoring
+
+### Frontend Deployment
+The frontend can be deployed to:
+- Vercel (recommended)
+- Netlify
+- AWS S3 + CloudFront
+- GitHub Pages
+
+Make sure to:
+- Update VITE_API_URL environment variable
+- Build the production bundle
+- Enable HTTPS
+- Configure caching
+
+## License
+
+Proprietary - All rights reserved
+
+## Support
+
+For questions or support, contact: [Your contact information]
+
+## Credits
+
+Developed by Devin for Melugiri Deepak (@deepakmelugiri)
