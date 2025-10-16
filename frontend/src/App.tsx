@@ -4,7 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Building2, Home, Users, Calendar, FileText, LogOut, Plus, Phone } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { Building2, Home, Users, Calendar, FileText, LogOut, Plus, Phone, Upload, DollarSign, UserPlus } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -212,6 +216,7 @@ function App() {
 function AdminDashboard({ user, token, logout }: { user: User; token: string; logout: () => void }) {
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [showAddOrg, setShowAddOrg] = useState(false)
+  const [showAddMember, setShowAddMember] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -225,6 +230,15 @@ function AdminDashboard({ user, token, logout }: { user: User; token: string; lo
     owner_phone: '',
     owner_password: '',
     subscription_plan: 'basic'
+  })
+  
+  const [memberFormData, setMemberFormData] = useState({
+    org_id: '',
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    role: 'org_member'
   })
 
   useEffect(() => {
@@ -282,6 +296,36 @@ function AdminDashboard({ user, token, logout }: { user: User; token: string; lo
       alert('Failed to create organization')
     }
   }
+  
+  const handleAddOrgMember = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/organizations/${memberFormData.org_id}/members`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: memberFormData.name,
+          email: memberFormData.email,
+          phone: memberFormData.phone,
+          password: memberFormData.password,
+          role: memberFormData.role
+        })
+      })
+      if (res.ok) {
+        alert('Organization member added successfully!')
+        setShowAddMember(false)
+        setMemberFormData({ org_id: '', name: '', email: '', phone: '', password: '', role: 'org_member' })
+      } else {
+        const error = await res.json()
+        alert(error.detail || 'Failed to add member')
+      }
+    } catch (error) {
+      console.error('Failed to add member', error)
+      alert('Failed to add member')
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -309,10 +353,106 @@ function AdminDashboard({ user, token, logout }: { user: User; token: string; lo
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold">Organizations</h2>
-          <Button onClick={() => setShowAddOrg(!showAddOrg)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Organization
-          </Button>
+          <div className="flex gap-2">
+            <Dialog open={showAddMember} onOpenChange={setShowAddMember}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Add Member
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Add Organization Member</DialogTitle>
+                  <DialogDescription>
+                    Add a new member to an existing organization
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="member-org">Organization</Label>
+                    <Select 
+                      value={memberFormData.org_id} 
+                      onValueChange={(value) => setMemberFormData({ ...memberFormData, org_id: value })}
+                    >
+                      <SelectTrigger id="member-org">
+                        <SelectValue placeholder="Select organization" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {organizations.map((org) => (
+                          <SelectItem key={org.id} value={org.id}>
+                            {org.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="member-name">Name</Label>
+                    <Input
+                      id="member-name"
+                      placeholder="Member name"
+                      value={memberFormData.name}
+                      onChange={(e) => setMemberFormData({ ...memberFormData, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="member-email">Email</Label>
+                    <Input
+                      id="member-email"
+                      type="email"
+                      placeholder="member@example.com"
+                      value={memberFormData.email}
+                      onChange={(e) => setMemberFormData({ ...memberFormData, email: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="member-phone">Phone</Label>
+                    <Input
+                      id="member-phone"
+                      type="tel"
+                      placeholder="Phone number"
+                      value={memberFormData.phone}
+                      onChange={(e) => setMemberFormData({ ...memberFormData, phone: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="member-password">Password</Label>
+                    <Input
+                      id="member-password"
+                      type="password"
+                      placeholder="Temporary password"
+                      value={memberFormData.password}
+                      onChange={(e) => setMemberFormData({ ...memberFormData, password: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="member-role">Role</Label>
+                    <Select 
+                      value={memberFormData.role} 
+                      onValueChange={(value) => setMemberFormData({ ...memberFormData, role: value })}
+                    >
+                      <SelectTrigger id="member-role">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="org_member">Member</SelectItem>
+                        <SelectItem value="org_owner">Owner</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={handleAddOrgMember} className="flex-1">Add Member</Button>
+                  <Button onClick={() => setShowAddMember(false)} variant="outline" className="flex-1">Cancel</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Button onClick={() => setShowAddOrg(!showAddOrg)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Organization
+            </Button>
+          </div>
         </div>
 
         {showAddOrg && (
@@ -458,6 +598,61 @@ function OrganizationDashboard({ user, token, logout }: { user: User; token: str
   const [activeTab, setActiveTab] = useState('projects')
   const [projects, setProjects] = useState<Project[]>([])
   const [clients, setClients] = useState<any[]>([])
+  
+  const [showAddClient, setShowAddClient] = useState(false)
+  const [showAddProject, setShowAddProject] = useState(false)
+  const [showAddTeamMember, setShowAddTeamMember] = useState(false)
+  const [showAddEvent, setShowAddEvent] = useState(false)
+  const [showUploadDesign, setShowUploadDesign] = useState(false)
+  const [showCreateInvoice, setShowCreateInvoice] = useState(false)
+  
+  const [clientFormData, setClientFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    password: ''
+  })
+  
+  const [projectFormData, setProjectFormData] = useState({
+    client_id: '',
+    name: '',
+    description: '',
+    budget: '',
+    start_date: '',
+    end_date: ''
+  })
+  
+  const [teamMemberFormData, setTeamMemberFormData] = useState({
+    project_id: '',
+    name: '',
+    email: '',
+    phone: '',
+    role: ''
+  })
+  
+  const [eventFormData, setEventFormData] = useState({
+    project_id: '',
+    title: '',
+    description: '',
+    event_date: '',
+    event_time: ''
+  })
+  
+  const [designFormData, setDesignFormData] = useState({
+    project_id: '',
+    title: '',
+    description: '',
+    file: null as File | null
+  })
+  
+  const [invoiceFormData, setInvoiceFormData] = useState({
+    project_id: '',
+    amount: '',
+    due_date: '',
+    description: '',
+    items: ''
+  })
 
   useEffect(() => {
     fetchProjects()
@@ -489,6 +684,170 @@ function OrganizationDashboard({ user, token, logout }: { user: User; token: str
       }
     } catch (error) {
       console.error('Failed to fetch clients', error)
+    }
+  }
+  
+  const handleCreateClient = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/organizations/clients`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(clientFormData)
+      })
+      if (res.ok) {
+        alert('Client created successfully!')
+        setShowAddClient(false)
+        setClientFormData({ name: '', email: '', phone: '', address: '', password: '' })
+        fetchClients()
+      } else {
+        const error = await res.json()
+        alert(error.detail || 'Failed to create client')
+      }
+    } catch (error) {
+      console.error('Failed to create client', error)
+      alert('Failed to create client')
+    }
+  }
+  
+  const handleCreateProject = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/organizations/projects`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...projectFormData,
+          budget: parseFloat(projectFormData.budget)
+        })
+      })
+      if (res.ok) {
+        alert('Project created successfully!')
+        setShowAddProject(false)
+        setProjectFormData({ client_id: '', name: '', description: '', budget: '', start_date: '', end_date: '' })
+        fetchProjects()
+      } else {
+        const error = await res.json()
+        alert(error.detail || 'Failed to create project')
+      }
+    } catch (error) {
+      console.error('Failed to create project', error)
+      alert('Failed to create project')
+    }
+  }
+  
+  const handleAddTeamMember = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/organizations/projects/${teamMemberFormData.project_id}/team`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: teamMemberFormData.name,
+          email: teamMemberFormData.email,
+          phone: teamMemberFormData.phone,
+          role: teamMemberFormData.role
+        })
+      })
+      if (res.ok) {
+        alert('Team member added successfully!')
+        setShowAddTeamMember(false)
+        setTeamMemberFormData({ project_id: '', name: '', email: '', phone: '', role: '' })
+      } else {
+        const error = await res.json()
+        alert(error.detail || 'Failed to add team member')
+      }
+    } catch (error) {
+      console.error('Failed to add team member', error)
+      alert('Failed to add team member')
+    }
+  }
+  
+  const handleCreateEvent = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/organizations/calendar/events`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(eventFormData)
+      })
+      if (res.ok) {
+        alert('Event created successfully!')
+        setShowAddEvent(false)
+        setEventFormData({ project_id: '', title: '', description: '', event_date: '', event_time: '' })
+      } else {
+        const error = await res.json()
+        alert(error.detail || 'Failed to create event')
+      }
+    } catch (error) {
+      console.error('Failed to create event', error)
+      alert('Failed to create event')
+    }
+  }
+  
+  const handleUploadDesign = async () => {
+    try {
+      const formData = new FormData()
+      formData.append('project_id', designFormData.project_id)
+      formData.append('title', designFormData.title)
+      formData.append('description', designFormData.description)
+      if (designFormData.file) {
+        formData.append('file', designFormData.file)
+      }
+      
+      const res = await fetch(`${API_URL}/api/organizations/designs`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      })
+      if (res.ok) {
+        alert('Design uploaded successfully!')
+        setShowUploadDesign(false)
+        setDesignFormData({ project_id: '', title: '', description: '', file: null })
+      } else {
+        const error = await res.json()
+        alert(error.detail || 'Failed to upload design')
+      }
+    } catch (error) {
+      console.error('Failed to upload design', error)
+      alert('Failed to upload design')
+    }
+  }
+  
+  const handleCreateInvoice = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/organizations/invoices`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...invoiceFormData,
+          amount: parseFloat(invoiceFormData.amount)
+        })
+      })
+      if (res.ok) {
+        alert('Invoice created successfully!')
+        setShowCreateInvoice(false)
+        setInvoiceFormData({ project_id: '', amount: '', due_date: '', description: '', items: '' })
+      } else {
+        const error = await res.json()
+        alert(error.detail || 'Failed to create invoice')
+      }
+    } catch (error) {
+      console.error('Failed to create invoice', error)
+      alert('Failed to create invoice')
     }
   }
 
@@ -539,10 +898,94 @@ function OrganizationDashboard({ user, token, logout }: { user: User; token: str
           <TabsContent value="projects" className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">Projects</h2>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                New Project
-              </Button>
+              <Dialog open={showAddProject} onOpenChange={setShowAddProject}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Project
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Create New Project</DialogTitle>
+                    <DialogDescription>
+                      Add a new project for your client
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="project-client">Client</Label>
+                      <Select 
+                        value={projectFormData.client_id} 
+                        onValueChange={(value) => setProjectFormData({ ...projectFormData, client_id: value })}
+                      >
+                        <SelectTrigger id="project-client">
+                          <SelectValue placeholder="Select a client" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {clients.map((client) => (
+                            <SelectItem key={client.id} value={client.id}>
+                              {client.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="project-name">Project Name</Label>
+                      <Input
+                        id="project-name"
+                        placeholder="Project name"
+                        value={projectFormData.name}
+                        onChange={(e) => setProjectFormData({ ...projectFormData, name: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="project-description">Description</Label>
+                      <Textarea
+                        id="project-description"
+                        placeholder="Project description"
+                        value={projectFormData.description}
+                        onChange={(e) => setProjectFormData({ ...projectFormData, description: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="project-budget">Budget (₹)</Label>
+                      <Input
+                        id="project-budget"
+                        type="number"
+                        placeholder="100000"
+                        value={projectFormData.budget}
+                        onChange={(e) => setProjectFormData({ ...projectFormData, budget: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="project-start">Start Date</Label>
+                        <Input
+                          id="project-start"
+                          type="date"
+                          value={projectFormData.start_date}
+                          onChange={(e) => setProjectFormData({ ...projectFormData, start_date: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="project-end">End Date</Label>
+                        <Input
+                          id="project-end"
+                          type="date"
+                          value={projectFormData.end_date}
+                          onChange={(e) => setProjectFormData({ ...projectFormData, end_date: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleCreateProject} className="flex-1">Create Project</Button>
+                    <Button onClick={() => setShowAddProject(false)} variant="outline" className="flex-1">Cancel</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {projects.map((project) => (
@@ -577,10 +1020,76 @@ function OrganizationDashboard({ user, token, logout }: { user: User; token: str
           <TabsContent value="clients" className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">Clients</h2>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Client
-              </Button>
+              <Dialog open={showAddClient} onOpenChange={setShowAddClient}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Client
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Add New Client</DialogTitle>
+                    <DialogDescription>
+                      Create a new client account for your organization
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="client-name">Name</Label>
+                      <Input
+                        id="client-name"
+                        placeholder="Client name"
+                        value={clientFormData.name}
+                        onChange={(e) => setClientFormData({ ...clientFormData, name: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="client-email">Email</Label>
+                      <Input
+                        id="client-email"
+                        type="email"
+                        placeholder="client@example.com"
+                        value={clientFormData.email}
+                        onChange={(e) => setClientFormData({ ...clientFormData, email: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="client-phone">Phone</Label>
+                      <Input
+                        id="client-phone"
+                        type="tel"
+                        placeholder="Phone number"
+                        value={clientFormData.phone}
+                        onChange={(e) => setClientFormData({ ...clientFormData, phone: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="client-address">Address</Label>
+                      <Textarea
+                        id="client-address"
+                        placeholder="Full address"
+                        value={clientFormData.address}
+                        onChange={(e) => setClientFormData({ ...clientFormData, address: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="client-password">Password</Label>
+                      <Input
+                        id="client-password"
+                        type="password"
+                        placeholder="Temporary password for client"
+                        value={clientFormData.password}
+                        onChange={(e) => setClientFormData({ ...clientFormData, password: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleCreateClient} className="flex-1">Create Client</Button>
+                    <Button onClick={() => setShowAddClient(false)} variant="outline" className="flex-1">Cancel</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {clients.map((client) => (
@@ -609,26 +1118,328 @@ function OrganizationDashboard({ user, token, logout }: { user: User; token: str
             )}
           </TabsContent>
 
-          <TabsContent value="calendar">
+          <TabsContent value="calendar" className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold">Calendar & Team</h2>
+              <div className="flex gap-2">
+                <Dialog open={showAddTeamMember} onOpenChange={setShowAddTeamMember}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Add Team Member
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Add Team Member</DialogTitle>
+                      <DialogDescription>
+                        Add a new team member to a project
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="team-project">Project</Label>
+                        <Select 
+                          value={teamMemberFormData.project_id} 
+                          onValueChange={(value) => setTeamMemberFormData({ ...teamMemberFormData, project_id: value })}
+                        >
+                          <SelectTrigger id="team-project">
+                            <SelectValue placeholder="Select a project" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {projects.map((project) => (
+                              <SelectItem key={project.id} value={project.id}>
+                                {project.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="team-name">Name</Label>
+                        <Input
+                          id="team-name"
+                          placeholder="Team member name"
+                          value={teamMemberFormData.name}
+                          onChange={(e) => setTeamMemberFormData({ ...teamMemberFormData, name: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="team-email">Email</Label>
+                        <Input
+                          id="team-email"
+                          type="email"
+                          placeholder="team@example.com"
+                          value={teamMemberFormData.email}
+                          onChange={(e) => setTeamMemberFormData({ ...teamMemberFormData, email: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="team-phone">Phone</Label>
+                        <Input
+                          id="team-phone"
+                          type="tel"
+                          placeholder="Phone number"
+                          value={teamMemberFormData.phone}
+                          onChange={(e) => setTeamMemberFormData({ ...teamMemberFormData, phone: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="team-role">Role</Label>
+                        <Input
+                          id="team-role"
+                          placeholder="e.g., Designer, Contractor"
+                          value={teamMemberFormData.role}
+                          onChange={(e) => setTeamMemberFormData({ ...teamMemberFormData, role: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={handleAddTeamMember} className="flex-1">Add Member</Button>
+                      <Button onClick={() => setShowAddTeamMember(false)} variant="outline" className="flex-1">Cancel</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                
+                <Dialog open={showAddEvent} onOpenChange={setShowAddEvent}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Add Event
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Create Calendar Event</DialogTitle>
+                      <DialogDescription>
+                        Schedule a meeting or milestone
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="event-project">Project</Label>
+                        <Select 
+                          value={eventFormData.project_id} 
+                          onValueChange={(value) => setEventFormData({ ...eventFormData, project_id: value })}
+                        >
+                          <SelectTrigger id="event-project">
+                            <SelectValue placeholder="Select a project" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {projects.map((project) => (
+                              <SelectItem key={project.id} value={project.id}>
+                                {project.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="event-title">Event Title</Label>
+                        <Input
+                          id="event-title"
+                          placeholder="Client meeting"
+                          value={eventFormData.title}
+                          onChange={(e) => setEventFormData({ ...eventFormData, title: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="event-description">Description</Label>
+                        <Textarea
+                          id="event-description"
+                          placeholder="Event details"
+                          value={eventFormData.description}
+                          onChange={(e) => setEventFormData({ ...eventFormData, description: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="event-date">Date</Label>
+                          <Input
+                            id="event-date"
+                            type="date"
+                            value={eventFormData.event_date}
+                            onChange={(e) => setEventFormData({ ...eventFormData, event_date: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="event-time">Time</Label>
+                          <Input
+                            id="event-time"
+                            type="time"
+                            value={eventFormData.event_time}
+                            onChange={(e) => setEventFormData({ ...eventFormData, event_time: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={handleCreateEvent} className="flex-1">Create Event</Button>
+                      <Button onClick={() => setShowAddEvent(false)} variant="outline" className="flex-1">Cancel</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                
+                <Dialog open={showUploadDesign} onOpenChange={setShowUploadDesign}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload Design
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Upload Design</DialogTitle>
+                      <DialogDescription>
+                        Upload a design file for a project
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="design-project">Project</Label>
+                        <Select 
+                          value={designFormData.project_id} 
+                          onValueChange={(value) => setDesignFormData({ ...designFormData, project_id: value })}
+                        >
+                          <SelectTrigger id="design-project">
+                            <SelectValue placeholder="Select a project" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {projects.map((project) => (
+                              <SelectItem key={project.id} value={project.id}>
+                                {project.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="design-title">Title</Label>
+                        <Input
+                          id="design-title"
+                          placeholder="Design title"
+                          value={designFormData.title}
+                          onChange={(e) => setDesignFormData({ ...designFormData, title: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="design-description">Description</Label>
+                        <Textarea
+                          id="design-description"
+                          placeholder="Design description"
+                          value={designFormData.description}
+                          onChange={(e) => setDesignFormData({ ...designFormData, description: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="design-file">File</Label>
+                        <Input
+                          id="design-file"
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => setDesignFormData({ ...designFormData, file: e.target.files?.[0] || null })}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={handleUploadDesign} className="flex-1">Upload</Button>
+                      <Button onClick={() => setShowUploadDesign(false)} variant="outline" className="flex-1">Cancel</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
             <Card>
-              <CardHeader>
-                <CardTitle>Calendar</CardTitle>
-                <CardDescription>Schedule meetings and project milestones</CardDescription>
-              </CardHeader>
               <CardContent className="py-12 text-center text-gray-500">
-                Calendar functionality coming soon...
+                Calendar events and team members will appear here...
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="invoices">
+          <TabsContent value="invoices" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Invoices</h2>
+              <Dialog open={showCreateInvoice} onOpenChange={setShowCreateInvoice}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <DollarSign className="w-4 h-4 mr-2" />
+                    Create Invoice
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Create Invoice</DialogTitle>
+                    <DialogDescription>
+                      Generate an invoice for a project
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="invoice-project">Project</Label>
+                      <Select 
+                        value={invoiceFormData.project_id} 
+                        onValueChange={(value) => setInvoiceFormData({ ...invoiceFormData, project_id: value })}
+                      >
+                        <SelectTrigger id="invoice-project">
+                          <SelectValue placeholder="Select a project" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {projects.map((project) => (
+                            <SelectItem key={project.id} value={project.id}>
+                              {project.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="invoice-amount">Amount (₹)</Label>
+                      <Input
+                        id="invoice-amount"
+                        type="number"
+                        placeholder="50000"
+                        value={invoiceFormData.amount}
+                        onChange={(e) => setInvoiceFormData({ ...invoiceFormData, amount: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="invoice-due">Due Date</Label>
+                      <Input
+                        id="invoice-due"
+                        type="date"
+                        value={invoiceFormData.due_date}
+                        onChange={(e) => setInvoiceFormData({ ...invoiceFormData, due_date: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="invoice-description">Description</Label>
+                      <Textarea
+                        id="invoice-description"
+                        placeholder="Invoice description"
+                        value={invoiceFormData.description}
+                        onChange={(e) => setInvoiceFormData({ ...invoiceFormData, description: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="invoice-items">Line Items (optional)</Label>
+                      <Textarea
+                        id="invoice-items"
+                        placeholder="Item 1: ₹10000&#10;Item 2: ₹20000"
+                        value={invoiceFormData.items}
+                        onChange={(e) => setInvoiceFormData({ ...invoiceFormData, items: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleCreateInvoice} className="flex-1">Create Invoice</Button>
+                    <Button onClick={() => setShowCreateInvoice(false)} variant="outline" className="flex-1">Cancel</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
             <Card>
-              <CardHeader>
-                <CardTitle>Invoices</CardTitle>
-                <CardDescription>Manage project invoices and payments</CardDescription>
-              </CardHeader>
               <CardContent className="py-12 text-center text-gray-500">
-                Invoice management coming soon...
+                Invoices will appear here...
               </CardContent>
             </Card>
           </TabsContent>
