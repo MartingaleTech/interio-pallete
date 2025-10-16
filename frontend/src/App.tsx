@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { Building2, Home, Users, Calendar, FileText, LogOut, Plus, Phone, Upload, DollarSign, UserPlus } from 'lucide-react'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Building2, Home, Users, Calendar, FileText, LogOut, Plus, Phone, Upload, DollarSign, UserPlus, Edit, Trash2 } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -598,6 +599,7 @@ function OrganizationDashboard({ user, token, logout }: { user: User; token: str
   const [activeTab, setActiveTab] = useState('projects')
   const [projects, setProjects] = useState<Project[]>([])
   const [clients, setClients] = useState<any[]>([])
+  const [teamMembers, setTeamMembers] = useState<any[]>([])
   
   const [showAddClient, setShowAddClient] = useState(false)
   const [showAddProject, setShowAddProject] = useState(false)
@@ -605,6 +607,9 @@ function OrganizationDashboard({ user, token, logout }: { user: User; token: str
   const [showAddEvent, setShowAddEvent] = useState(false)
   const [showUploadDesign, setShowUploadDesign] = useState(false)
   const [showCreateInvoice, setShowCreateInvoice] = useState(false)
+  const [showAddOrgTeamMember, setShowAddOrgTeamMember] = useState(false)
+  const [showEditTeamMember, setShowEditTeamMember] = useState(false)
+  const [editingMember, setEditingMember] = useState<any>(null)
   
   const [clientFormData, setClientFormData] = useState({
     name: '',
@@ -653,10 +658,20 @@ function OrganizationDashboard({ user, token, logout }: { user: User; token: str
     description: '',
     items: ''
   })
+  
+  const [orgTeamMemberFormData, setOrgTeamMemberFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    role: 'org_member',
+    password: ''
+  })
 
   useEffect(() => {
     fetchProjects()
     fetchClients()
+    fetchTeamMembers()
   }, [])
 
   const fetchProjects = async () => {
@@ -684,6 +699,20 @@ function OrganizationDashboard({ user, token, logout }: { user: User; token: str
       }
     } catch (error) {
       console.error('Failed to fetch clients', error)
+    }
+  }
+  
+  const fetchTeamMembers = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/organizations/members`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setTeamMembers(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch team members', error)
     }
   }
   
@@ -850,6 +879,91 @@ function OrganizationDashboard({ user, token, logout }: { user: User; token: str
       alert('Failed to create invoice')
     }
   }
+  
+  const handleAddOrgTeamMember = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/organizations/members`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(orgTeamMemberFormData)
+      })
+      if (res.ok) {
+        alert('Team member added successfully!')
+        setShowAddOrgTeamMember(false)
+        setOrgTeamMemberFormData({ first_name: '', last_name: '', email: '', phone: '', role: 'org_member', password: '' })
+        fetchTeamMembers()
+      } else {
+        const error = await res.json()
+        alert(error.detail || 'Failed to add team member')
+      }
+    } catch (error) {
+      console.error('Failed to add team member', error)
+      alert('Failed to add team member')
+    }
+  }
+  
+  const handleEditTeamMember = async () => {
+    if (!editingMember) return
+    try {
+      const res = await fetch(`${API_URL}/api/organizations/members/${editingMember.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(orgTeamMemberFormData)
+      })
+      if (res.ok) {
+        alert('Team member updated successfully!')
+        setShowEditTeamMember(false)
+        setEditingMember(null)
+        setOrgTeamMemberFormData({ first_name: '', last_name: '', email: '', phone: '', role: 'org_member', password: '' })
+        fetchTeamMembers()
+      } else {
+        const error = await res.json()
+        alert(error.detail || 'Failed to update team member')
+      }
+    } catch (error) {
+      console.error('Failed to update team member', error)
+      alert('Failed to update team member')
+    }
+  }
+  
+  const handleRemoveTeamMember = async (memberId: string) => {
+    if (!confirm('Are you sure you want to remove this team member?')) return
+    try {
+      const res = await fetch(`${API_URL}/api/organizations/members/${memberId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (res.ok) {
+        alert('Team member removed successfully!')
+        fetchTeamMembers()
+      } else {
+        const error = await res.json()
+        alert(error.detail || 'Failed to remove team member')
+      }
+    } catch (error) {
+      console.error('Failed to remove team member', error)
+      alert('Failed to remove team member')
+    }
+  }
+  
+  const openEditDialog = (member: any) => {
+    setEditingMember(member)
+    setOrgTeamMemberFormData({
+      first_name: member.first_name || member.name?.split(' ')[0] || '',
+      last_name: member.last_name || member.name?.split(' ')[1] || '',
+      email: member.email,
+      phone: member.phone,
+      role: member.role,
+      password: ''
+    })
+    setShowEditTeamMember(true)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -876,7 +990,7 @@ function OrganizationDashboard({ user, token, logout }: { user: User; token: str
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-4">
+          <TabsList className="grid w-full max-w-2xl grid-cols-5">
             <TabsTrigger value="projects">
               <Home className="w-4 h-4 mr-2" />
               Projects
@@ -884,6 +998,10 @@ function OrganizationDashboard({ user, token, logout }: { user: User; token: str
             <TabsTrigger value="clients">
               <Users className="w-4 h-4 mr-2" />
               Clients
+            </TabsTrigger>
+            <TabsTrigger value="team">
+              <UserPlus className="w-4 h-4 mr-2" />
+              Team
             </TabsTrigger>
             <TabsTrigger value="calendar">
               <Calendar className="w-4 h-4 mr-2" />
@@ -1117,6 +1235,240 @@ function OrganizationDashboard({ user, token, logout }: { user: User; token: str
               </Card>
             )}
           </TabsContent>
+
+          <TabsContent value="team" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Team Members</h2>
+              <Dialog open={showAddOrgTeamMember} onOpenChange={setShowAddOrgTeamMember}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Team Member
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Add Team Member</DialogTitle>
+                    <DialogDescription>
+                      Add a new team member to your organization
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="member-first-name">First Name</Label>
+                        <Input
+                          id="member-first-name"
+                          placeholder="First name"
+                          value={orgTeamMemberFormData.first_name}
+                          onChange={(e) => setOrgTeamMemberFormData({ ...orgTeamMemberFormData, first_name: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="member-last-name">Last Name</Label>
+                        <Input
+                          id="member-last-name"
+                          placeholder="Last name"
+                          value={orgTeamMemberFormData.last_name}
+                          onChange={(e) => setOrgTeamMemberFormData({ ...orgTeamMemberFormData, last_name: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="member-email">Email</Label>
+                      <Input
+                        id="member-email"
+                        type="email"
+                        placeholder="member@example.com"
+                        value={orgTeamMemberFormData.email}
+                        onChange={(e) => setOrgTeamMemberFormData({ ...orgTeamMemberFormData, email: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="member-phone">Phone Number</Label>
+                      <Input
+                        id="member-phone"
+                        type="tel"
+                        placeholder="Phone number"
+                        value={orgTeamMemberFormData.phone}
+                        onChange={(e) => setOrgTeamMemberFormData({ ...orgTeamMemberFormData, phone: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="member-role">Role</Label>
+                      <Select 
+                        value={orgTeamMemberFormData.role} 
+                        onValueChange={(value) => setOrgTeamMemberFormData({ ...orgTeamMemberFormData, role: value })}
+                      >
+                        <SelectTrigger id="member-role">
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="org_owner">Owner</SelectItem>
+                          <SelectItem value="org_member">Member</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="member-password">Password</Label>
+                      <Input
+                        id="member-password"
+                        type="password"
+                        placeholder="Temporary password"
+                        value={orgTeamMemberFormData.password}
+                        onChange={(e) => setOrgTeamMemberFormData({ ...orgTeamMemberFormData, password: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleAddOrgTeamMember} className="flex-1">Add Member</Button>
+                    <Button onClick={() => setShowAddOrgTeamMember(false)} variant="outline" className="flex-1">Cancel</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+            
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>First Name</TableHead>
+                      <TableHead>Last Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone Number</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {teamMembers.map((member) => (
+                      <TableRow key={member.id}>
+                        <TableCell>{member.first_name || member.name?.split(' ')[0] || '-'}</TableCell>
+                        <TableCell>{member.last_name || member.name?.split(' ')[1] || '-'}</TableCell>
+                        <TableCell>{member.email}</TableCell>
+                        <TableCell>{member.phone || '-'}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            member.role === 'org_owner' 
+                              ? 'bg-purple-100 text-purple-700' 
+                              : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            {member.role === 'org_owner' ? 'Owner' : 'Member'}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => openEditDialog(member)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleRemoveTeamMember(member.id)}
+                            >
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {teamMembers.length === 0 && (
+                  <div className="py-12 text-center text-gray-500">
+                    No team members yet. Click "Add Team Member" to add one.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <Dialog open={showEditTeamMember} onOpenChange={setShowEditTeamMember}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Edit Team Member</DialogTitle>
+                <DialogDescription>
+                  Update team member information
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-member-first-name">First Name</Label>
+                    <Input
+                      id="edit-member-first-name"
+                      placeholder="First name"
+                      value={orgTeamMemberFormData.first_name}
+                      onChange={(e) => setOrgTeamMemberFormData({ ...orgTeamMemberFormData, first_name: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-member-last-name">Last Name</Label>
+                    <Input
+                      id="edit-member-last-name"
+                      placeholder="Last name"
+                      value={orgTeamMemberFormData.last_name}
+                      onChange={(e) => setOrgTeamMemberFormData({ ...orgTeamMemberFormData, last_name: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-member-email">Email</Label>
+                  <Input
+                    id="edit-member-email"
+                    type="email"
+                    placeholder="member@example.com"
+                    value={orgTeamMemberFormData.email}
+                    onChange={(e) => setOrgTeamMemberFormData({ ...orgTeamMemberFormData, email: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-member-phone">Phone Number</Label>
+                  <Input
+                    id="edit-member-phone"
+                    type="tel"
+                    placeholder="Phone number"
+                    value={orgTeamMemberFormData.phone}
+                    onChange={(e) => setOrgTeamMemberFormData({ ...orgTeamMemberFormData, phone: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-member-role">Role</Label>
+                  <Select 
+                    value={orgTeamMemberFormData.role} 
+                    onValueChange={(value) => setOrgTeamMemberFormData({ ...orgTeamMemberFormData, role: value })}
+                  >
+                    <SelectTrigger id="edit-member-role">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="org_owner">Owner</SelectItem>
+                      <SelectItem value="org_member">Member</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-member-password">New Password (optional)</Label>
+                  <Input
+                    id="edit-member-password"
+                    type="password"
+                    placeholder="Leave empty to keep current password"
+                    value={orgTeamMemberFormData.password}
+                    onChange={(e) => setOrgTeamMemberFormData({ ...orgTeamMemberFormData, password: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleEditTeamMember} className="flex-1">Update Member</Button>
+                <Button onClick={() => setShowEditTeamMember(false)} variant="outline" className="flex-1">Cancel</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           <TabsContent value="calendar" className="space-y-4">
             <div className="flex items-center justify-between mb-4">

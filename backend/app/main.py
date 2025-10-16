@@ -52,6 +52,8 @@ class User(BaseModel):
     org_id: Optional[str] = None
     created_at: str
     phone: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -122,9 +124,12 @@ class OrgMember(BaseModel):
 
 class OrgMemberCreate(BaseModel):
     email: EmailStr
-    name: str
+    name: str = ""
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     password: str
     phone: Optional[str] = None
+    role: Optional[str] = None
 
 class Project(BaseModel):
     id: str
@@ -530,6 +535,102 @@ async def remove_org_member(org_id: str, user_id: str, admin: User = Depends(req
     del users_db[user_id]
     if user_id in passwords_db:
         del passwords_db[user_id]
+    
+    return {"message": "Member removed successfully"}
+
+@app.get("/api/organizations/members", response_model=List[User])
+async def get_organization_members(user: User = Depends(get_current_user)):
+    if not user.org_id:
+        raise HTTPException(status_code=400, detail="User is not part of an organization")
+    
+    members = [u for u in users_db.values() if u.org_id == user.org_id]
+    return members
+
+@app.post("/api/organizations/members", response_model=User)
+async def add_organization_member(member: OrgMemberCreate, user: User = Depends(get_current_user)):
+    if not user.org_id:
+        raise HTTPException(status_code=400, detail="User is not part of an organization")
+    
+    if user.role not in [UserRole.ORG_OWNER, UserRole.ORG_MEMBER]:
+        raise HTTPException(status_code=403, detail="Not authorized to add members")
+    
+    for existing_user in users_db.values():
+        if existing_user.email == member.email:
+            raise HTTPException(status_code=400, detail="Email already exists")
+    
+    member_id = str(uuid.uuid4())
+    first_name = getattr(member, 'first_name', '')
+    last_name = getattr(member, 'last_name', '')
+    member_name = f"{first_name} {last_name}".strip() if first_name or last_name else member.name
+    
+    new_member = User(
+        id=member_id,
+        email=member.email,
+        name=member_name,
+        role=getattr(member, 'role', UserRole.ORG_MEMBER),
+        org_id=user.org_id,
+        created_at=datetime.now().isoformat(),
+        phone=member.phone,
+        first_name=first_name if first_name else None,
+        last_name=last_name if last_name else None
+    )
+    users_db[member_id] = new_member
+    passwords_db[member_id] = hash_password(member.password)
+    
+    return new_member
+
+@app.put("/api/organizations/members/{member_id}", response_model=User)
+async def update_organization_member(member_id: str, member: OrgMemberCreate, user: User = Depends(get_current_user)):
+    if not user.org_id:
+        raise HTTPException(status_code=400, detail="User is not part of an organization")
+    
+    if user.role not in [UserRole.ORG_OWNER, UserRole.ORG_MEMBER]:
+        raise HTTPException(status_code=403, detail="Not authorized to update members")
+    
+    if member_id not in users_db:
+        raise HTTPException(status_code=404, detail="Member not found")
+    
+    existing_member = users_db[member_id]
+    if existing_member.org_id != user.org_id:
+        raise HTTPException(status_code=403, detail="Member not in your organization")
+    
+    first_name = getattr(member, 'first_name', '')
+    last_name = getattr(member, 'last_name', '')
+    member_name = f"{first_name} {last_name}".strip() if first_name or last_name else member.name
+    
+    existing_member.email = member.email
+    existing_member.name = member_name
+    existing_member.phone = member.phone
+    existing_member.role = getattr(member, 'role', existing_member.role)
+    existing_member.first_name = first_name if first_name else None
+    existing_member.last_name = last_name if last_name else None
+    
+    if member.password:
+        passwords_db[member_id] = hash_password(member.password)
+    
+    return existing_member
+
+@app.delete("/api/organizations/members/{member_id}")
+async def remove_organization_member(member_id: str, user: User = Depends(get_current_user)):
+    if not user.org_id:
+        raise HTTPException(status_code=400, detail="User is not part of an organization")
+    
+    if user.role not in [UserRole.ORG_OWNER, UserRole.ORG_MEMBER]:
+        raise HTTPException(status_code=403, detail="Not authorized to remove members")
+    
+    if member_id not in users_db:
+        raise HTTPException(status_code=404, detail="Member not found")
+    
+    member = users_db[member_id]
+    if member.org_id != user.org_id:
+        raise HTTPException(status_code=403, detail="Member not in your organization")
+    
+    if member.role == UserRole.ORG_OWNER:
+        raise HTTPException(status_code=400, detail="Cannot remove organization owner")
+    
+    del users_db[member_id]
+    if member_id in passwords_db:
+        del passwords_db[member_id]
     
     return {"message": "Member removed successfully"}
 
