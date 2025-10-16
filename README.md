@@ -47,9 +47,11 @@ Each interior design organization has its own isolated instance within the platf
 
 **Backend:**
 - FastAPI (Python web framework)
+- SQLAlchemy (ORM)
+- Alembic (database migrations)
 - Pydantic (data validation)
 - bcrypt (password hashing)
-- In-memory database (proof of concept)
+- SQLite (development) / PostgreSQL (production-ready)
 
 **Frontend:**
 - React + TypeScript
@@ -77,7 +79,17 @@ cd backend
 poetry install
 ```
 
-3. Start the development server:
+3. Initialize the database:
+```bash
+poetry run python -m src.core.init_db
+```
+
+This creates the database tables and a default admin user:
+- Email: `admin@interiopalette.com`
+- Password: `admin123`
+- Phone: `9999999999`
+
+4. Start the development server:
 ```bash
 poetry run fastapi dev app/main.py
 ```
@@ -108,6 +120,14 @@ The frontend will be available at `http://localhost:5173`
 ## Usage Guide
 
 ### Admin Login
+
+You can log in as admin using either:
+
+**Email/Password:**
+- Email: `admin@interiopalette.com`
+- Password: `admin123`
+
+**Phone OTP:**
 - Phone: `9999999999`
 - A mock OTP will be displayed after requesting it
 
@@ -210,11 +230,18 @@ Use the phone number provided during organization creation to log in via OTP.
 
 ## Development Notes
 
-### In-Memory Database
-Currently, the platform uses an in-memory database for proof of concept. This means:
-- Data is lost when the server restarts
-- Not suitable for production use
-- Easy migration to PostgreSQL, MongoDB, or other databases
+### Database
+The platform uses SQLAlchemy ORM with SQLite for development and is production-ready for PostgreSQL:
+- **Development**: SQLite database (`interio_palette.db`)
+- **Data Persistence**: All data persists across server restarts
+- **Migrations**: Alembic manages schema changes
+- **Production**: Set `DATABASE_URL` environment variable to PostgreSQL connection string
+
+**Switch to PostgreSQL:**
+```bash
+export DATABASE_URL="postgresql://user:password@host:5432/dbname"
+poetry run alembic upgrade head
+```
 
 ### Mock OTP
 The OTP system is mocked for development. The OTP is:
@@ -243,17 +270,24 @@ Payment processing placeholders are included. For production, integrate with:
 
 ## Future Enhancements
 
-- Real database integration (PostgreSQL recommended)
-- Real SMS/OTP provider integration
-- File upload and storage
-- Payment gateway integration
-- Advanced calendar with reminders
-- Real-time notifications
+### Phase 1 (Planned - Next Priority)
+- File upload and storage system for project designs
+- Comment/notes system for attachments
+- Support ticket system
+- Real-time chat between designers and clients
+
+### Phase 2
+- Real SMS/OTP provider integration (MSG91, Twilio)
+- Payment gateway integration (Razorpay, Stripe)
+- Advanced calendar with reminders and notifications
+- Real-time notifications (WebSocket)
+
+### Phase 3
 - Mobile app (React Native)
-- Analytics and reporting
+- Analytics and reporting dashboard
 - Document e-signing
-- Chat/messaging between designers and clients
 - 3D design viewer
+- Automated workflow and approval system
 
 ## Security Considerations
 
