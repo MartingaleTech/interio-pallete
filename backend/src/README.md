@@ -1,6 +1,105 @@
 # Backend Architecture
 
-This document describes the restructured backend architecture for the Interio Palette application.
+**Last Updated:** October 16, 2025
+
+This document describes the restructured backend architecture for the Interio Palette application, including completed work, current priorities, and roadmap.
+
+---
+
+## 📊 Project Status
+
+### ✅ Completed (Phase 0 - Foundation)
+
+**Backend Restructuring** (Completed: Oct 16, 2025)
+- ✅ Modular src/ layout with feature-based organization
+- ✅ Separation of concerns: models, routes, services, dependencies
+- ✅ SQLAlchemy ORM integration with all entities
+- ✅ Repository pattern for data access layer
+- ✅ Database-backed services (auth, organization, project, client, invoice)
+- ✅ Dependency injection for database sessions
+- ✅ Alembic migrations setup
+- ✅ Database initialization script with default admin user
+- ✅ Comprehensive architecture documentation
+
+**Testing & Validation:**
+- ✅ Admin login (email/password) working
+- ✅ Organization CRUD working
+- ✅ Phone OTP flow working
+- ✅ Data persistence verified
+
+### 🚧 Current Priority (Phase 1 - Core Features)
+
+**Next Up:**
+1. **File Attachments & Design Upload System** (~15-18 hours)
+   - File upload endpoints (images, PDFs, 3D models)
+   - Cloud storage integration (S3 or local for dev)
+   - File metadata tracking
+   - Preview/download functionality
+   - Permission-based access
+
+2. **Comments/Notes on Attachments** (~8-10 hours)
+   - Comment model and repository
+   - Nested comment threads
+   - @mentions support
+   - Mark as resolved functionality
+
+3. **Support Ticket System** (~12-15 hours)
+   - Ticket CRUD operations
+   - Priority and category management
+   - Assignment to team members
+   - Status tracking (open, in-progress, resolved)
+   - Comment threads on tickets
+
+4. **Real-time Chat System** (~20-25 hours)
+   - WebSocket setup
+   - Project-level chat rooms
+   - Direct messaging
+   - Message persistence
+   - Read receipts and typing indicators
+
+**Phase 1 Estimate:** 55-68 hours total
+
+### 📅 Roadmap
+
+**Phase 2 - Integrations** (~30-35 hours)
+- Real SMS/OTP provider (MSG91, Twilio)
+- Payment gateway (Razorpay, Stripe)
+- Email notifications
+- Advanced calendar with reminders
+- Push notifications
+
+**Phase 3 - Advanced Features** (~40-50 hours)
+- Analytics dashboard
+- Document e-signing
+- 3D design viewer
+- Automated workflows
+- Mobile app (React Native)
+
+### ⚠️ Known Issues & Technical Debt
+
+1. **Old service files** - Legacy `*_service.py` files exist alongside new `*_service_new.py`. Need cleanup.
+2. **No automated tests** - Test structure exists but no tests written yet
+3. **Deprecated datetime** - Using `datetime.utcnow()` instead of `datetime.now(datetime.UTC)`
+4. **SQLite limitations** - Calendar attendees stored as JSON string (works fine, just not ideal)
+
+### 🎯 Today's Work (October 16, 2025)
+
+- [x] Set up SQLAlchemy and database models
+- [x] Create repository layer
+- [x] Implement database-backed services
+- [x] Update all routes with dependency injection
+- [x] Configure Alembic migrations
+- [x] Create database initialization script
+- [x] Test core flows (login, org creation, OTP)
+- [x] Document architecture and setup
+- [x] Create comprehensive README
+
+**Next Session:**
+- [ ] Begin Phase 1: File attachment system
+- [ ] Or: Address technical debt (remove old files, add tests)
+- [ ] Or: Review and test with stakeholders
+
+---
 
 ## Directory Structure
 
