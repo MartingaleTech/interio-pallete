@@ -1,0 +1,1 @@
+"""Interio Palette Backend Application."""
