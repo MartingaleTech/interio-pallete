@@ -2,6 +2,21 @@ import { api } from './api'
 import { User } from '../types'
 
 export const authService = {
+  async login(email: string, password: string) {
+    const res = await api.fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    })
+    
+    if (!res.ok) {
+      const error = await res.json()
+      throw new Error(error.detail || 'Invalid email or password')
+    }
+    
+    return res.json()
+  },
+
   async requestOtp(phone: string) {
     const res = await api.fetch('/api/auth/phone/request-otp', {
       method: 'POST',
