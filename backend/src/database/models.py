@@ -186,3 +186,48 @@ class OrgInvoice(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     organization = relationship("Organization")
+
+
+class RecentlyViewedOrg(Base):
+    __tablename__ = "recently_viewed_orgs"
+    
+    id = Column(String, primary_key=True)
+    admin_id = Column(String, ForeignKey("users.id"), nullable=False)
+    org_id = Column(String, ForeignKey("organizations.id"), nullable=False)
+    viewed_at = Column(DateTime, default=datetime.utcnow)
+    
+    admin = relationship("User")
+    organization = relationship("Organization")
+
+
+class SupportTicket(Base):
+    __tablename__ = "support_tickets"
+    
+    id = Column(String, primary_key=True)
+    org_id = Column(String, ForeignKey("organizations.id"), nullable=False)
+    created_by = Column(String, ForeignKey("users.id"), nullable=False)
+    subject = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    status = Column(String, nullable=False)
+    priority = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    organization = relationship("Organization")
+    creator = relationship("User")
+
+
+class AdminNotification(Base):
+    __tablename__ = "admin_notifications"
+    
+    id = Column(String, primary_key=True)
+    admin_id = Column(String, ForeignKey("users.id"), nullable=False)
+    org_id = Column(String, ForeignKey("organizations.id"), nullable=True)
+    notification_type = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    is_read = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    admin = relationship("User")
+    organization = relationship("Organization")

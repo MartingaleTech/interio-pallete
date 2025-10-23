@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from typing import List
 from sqlalchemy.orm import Session
 from src.models import (
     Organization, OrganizationCreate, OrganizationUpdate,
-    User, OrgMemberCreate, OrgInvoice, OrgInvoiceCreate
+    User, OrgMemberCreate, OrgInvoice, OrgInvoiceCreate,
+    SupportTicket, SupportTicketUpdate, AdminNotification, AdminStats
 )
-from src.services import organization_service_new, invoice_service_new
-from src.dependencies.auth_new import require_admin
+from src.services import organization_service_new, invoice_service_new, admin_service_new
+from src.dependencies.auth_new import require_admin, get_current_user
 from src.config.database import get_db
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -113,3 +114,104 @@ async def get_invoices(
 ):
     """Get all invoices for an organization (admin only)."""
     return invoice_service_new.get_org_invoices(db, org_id)
+
+
+@router.get("/stats", response_model=AdminStats)
+async def get_stats(
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """Get admin dashboard statistics."""
+    return admin_service_new.get_admin_stats(db)
+
+
+@router.get("/organizations/newly-added", response_model=List[Organization])
+async def get_newly_added_orgs(
+    limit: int = Query(5, ge=1, le=20),
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """Get newly added organizations."""
+    return admin_service_new.get_newly_added_orgs(db, limit)
+
+
+@router.get("/organizations/recently-viewed", response_model=List[Organization])
+async def get_recently_viewed_orgs(
+    limit: int = Query(5, ge=1, le=20),
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """Get recently viewed organizations."""
+    return admin_service_new.get_recently_viewed_orgs(db, admin.id, limit)
+
+
+@router.post("/organizations/{org_id}/view")
+async def record_org_view(
+    org_id: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """Record that an admin viewed an organization."""
+    admin_service_new.record_org_view(db, admin.id, org_id)
+    return {"message": "View recorded"}
+
+
+@router.get("/support-tickets", response_model=List[SupportTicket])
+async def get_all_tickets(
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """Get all support tickets (admin only)."""
+    return admin_service_new.get_all_support_tickets(db)
+
+
+@router.get("/organizations/{org_id}/support-tickets", response_model=List[SupportTicket])
+async def get_org_tickets(
+    org_id: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """Get support tickets for an organization."""
+    return admin_service_new.get_support_tickets_for_org(db, org_id)
+
+
+@router.patch("/support-tickets/{ticket_id}", response_model=SupportTicket)
+async def update_ticket(
+    ticket_id: str,
+    updates: SupportTicketUpdate,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """Update a support ticket."""
+    return admin_service_new.update_support_ticket(db, ticket_id, updates)
+
+
+@router.get("/notifications", response_model=List[AdminNotification])
+async def get_notifications(
+    unread_only: bool = Query(False),
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """Get admin notifications."""
+    return admin_service_new.get_admin_notifications(db, admin.id, unread_only)
+
+
+@router.post("/notifications/{notification_id}/read")
+async def mark_notification_read(
+    notification_id: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """Mark a notification as read."""
+    admin_service_new.mark_notification_as_read(db, notification_id)
+    return {"message": "Notification marked as read"}
+
+
+@router.post("/notifications/read-all")
+async def mark_all_notifications_read(
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """Mark all notifications as read."""
+    admin_service_new.mark_all_notifications_as_read(db, admin.id)
+    return {"message": "All notifications marked as read"}

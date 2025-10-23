@@ -6,6 +6,10 @@ from .client import Client, ClientCreate
 from .calendar import CalendarEvent, CalendarEventCreate
 from .design import ProjectDesign, ProjectDesignCreate
 from .invoice import Invoice, InvoiceCreate, OrgInvoice, OrgInvoiceCreate
+from .admin import (
+    RecentlyViewedOrg, SupportTicket, SupportTicketCreate, SupportTicketUpdate,
+    AdminNotification, AdminNotificationCreate, AdminStats
+)
 
 __all__ = [
     "UserRole",
@@ -36,4 +40,11 @@ __all__ = [
     "InvoiceCreate",
     "OrgInvoice",
     "OrgInvoiceCreate",
+    "RecentlyViewedOrg",
+    "SupportTicket",
+    "SupportTicketCreate",
+    "SupportTicketUpdate",
+    "AdminNotification",
+    "AdminNotificationCreate",
+    "AdminStats",
 ]

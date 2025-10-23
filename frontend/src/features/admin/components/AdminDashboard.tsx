@@ -1,95 +1,94 @@
 import { useState, useEffect } from 'react'
-import { Plus, UserPlus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { DashboardHeader } from '../../../components/shared/DashboardHeader'
 import { useAuth } from '../../../state/AuthContext'
 import { adminService } from '../../../services/adminService'
-import { Organization } from '../../../types'
-import { CreateOrganizationForm } from './CreateOrganizationForm'
-import { AddMemberDialog } from './AddMemberDialog'
-import { OrganizationCard } from './OrganizationCard'
+import { AdminSidebar } from './AdminSidebar'
+import { AdminOverview } from './AdminOverview'
+import { AdminOrganizationsList } from './AdminOrganizationsList'
+import { AdminTickets } from './AdminTickets'
+import { AdminNotifications } from './AdminNotifications'
+import { AdminAnalytics } from './AdminAnalytics'
+import { OrgDashboard } from './OrgDashboard'
 
 export function AdminDashboard() {
   const { user, logout, token } = useAuth()
-  const [organizations, setOrganizations] = useState<Organization[]>([])
-  const [showAddOrg, setShowAddOrg] = useState(false)
-  const [showAddMember, setShowAddMember] = useState(false)
+  const [activeView, setActiveView] = useState<string>('overview')
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null)
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
 
   useEffect(() => {
     if (token) {
-      fetchOrganizations()
+      fetchUnreadNotifications()
     }
   }, [token])
 
-  const fetchOrganizations = async () => {
+  const fetchUnreadNotifications = async () => {
     if (!token) return
     try {
-      const data = await adminService.getOrganizations(token)
-      setOrganizations(data)
+      const notifications = await adminService.getNotifications(token, true)
+      setUnreadNotifications(notifications.length)
     } catch (error) {
-      console.error('Failed to fetch organizations', error)
+      console.error('Failed to fetch notifications', error)
     }
   }
 
-  const handleOrganizationCreated = () => {
-    setShowAddOrg(false)
-    fetchOrganizations()
+  const handleSelectOrg = (orgId: string) => {
+    setSelectedOrgId(orgId)
+    setActiveView('org-detail')
   }
 
-  if (!user) return null
+  const handleBackFromOrg = () => {
+    setSelectedOrgId(null)
+    setActiveView('organizations')
+  }
+
+  if (!user || !token) return null
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardHeader 
-        title="Admin Dashboard" 
-        userName={user.name} 
-        onLogout={logout} 
+    <div className="min-h-screen bg-gray-50 flex">
+      <AdminSidebar 
+        activeView={activeView} 
+        onViewChange={setActiveView}
+        unreadNotifications={unreadNotifications}
       />
-
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Organizations</h2>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowAddMember(true)}>
-              <UserPlus className="w-4 h-4 mr-2" />
-              Add Member
-            </Button>
-            <Button onClick={() => setShowAddOrg(!showAddOrg)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Organization
-            </Button>
-          </div>
-        </div>
-
-        {showAddOrg && (
-          <CreateOrganizationForm 
-            onSuccess={handleOrganizationCreated}
-            onCancel={() => setShowAddOrg(false)}
-          />
-        )}
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {organizations.map((org) => (
-            <OrganizationCard key={org.id} organization={org} />
-          ))}
-        </div>
-
-        {organizations.length === 0 && !showAddOrg && (
-          <Card>
-            <CardContent className="py-12 text-center text-gray-500">
-              No organizations yet. Click "Add Organization" to create one.
-            </CardContent>
-          </Card>
-        )}
-
-        <AddMemberDialog
-          open={showAddMember}
-          onOpenChange={setShowAddMember}
-          organizations={organizations}
-          onSuccess={fetchOrganizations}
+      
+      <div className="flex-1 flex flex-col">
+        <DashboardHeader 
+          title="Admin Dashboard" 
+          userName={user.name} 
+          onLogout={logout} 
         />
-      </main>
+
+        <main className="flex-1">
+          {activeView === 'overview' && (
+            <AdminOverview token={token} onSelectOrg={handleSelectOrg} />
+          )}
+          
+          {activeView === 'organizations' && (
+            <AdminOrganizationsList token={token} onSelectOrg={handleSelectOrg} />
+          )}
+          
+          {activeView === 'tickets' && (
+            <AdminTickets token={token} />
+          )}
+          
+          {activeView === 'notifications' && (
+            <AdminNotifications token={token} />
+          )}
+          
+          {activeView === 'analytics' && (
+            <AdminAnalytics />
+          )}
+          
+          {activeView === 'org-detail' && selectedOrgId && (
+            <OrgDashboard 
+              orgId={selectedOrgId} 
+              token={token} 
+              onBack={handleBackFromOrg}
+            />
+          )}
+        </main>
+      </div>
     </div>
   )
 }
