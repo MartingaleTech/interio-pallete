@@ -1,8 +1,8 @@
-from sqlalchemy import Column, String, Float, DateTime, ForeignKey, Enum as SQLEnum, Integer, Text
+from sqlalchemy import Column, String, Float, DateTime, ForeignKey, Enum as SQLEnum, Integer, Text, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from src.config.database import Base
-from src.models.enums import UserRole, SubscriptionStatus, ProjectStatus, PaymentStatus
+from src.models.enums import UserRole, SubscriptionStatus, ProjectStatus, PaymentStatus, TicketStatus, TicketPriority, TicketType
 import enum
 
 
@@ -198,6 +198,89 @@ class RecentlyViewedOrg(Base):
     
     admin = relationship("User")
     organization = relationship("Organization")
+
+
+class ProjectTicket(Base):
+    __tablename__ = "project_tickets"
+    
+    id = Column(String, primary_key=True)
+    project_id = Column(String, ForeignKey("projects.id"), nullable=False)
+    org_id = Column(String, ForeignKey("organizations.id"), nullable=False)
+    created_by = Column(String, ForeignKey("users.id"), nullable=False)
+    assigned_to = Column(String, ForeignKey("users.id"), nullable=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    ticket_type = Column(SQLEnum(TicketType), nullable=False)
+    status = Column(SQLEnum(TicketStatus), nullable=False, default=TicketStatus.OPEN)
+    priority = Column(SQLEnum(TicketPriority), nullable=False, default=TicketPriority.MEDIUM)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    resolved_at = Column(DateTime, nullable=True)
+    
+    project = relationship("Project")
+    organization = relationship("Organization")
+    creator = relationship("User", foreign_keys=[created_by])
+    assignee = relationship("User", foreign_keys=[assigned_to])
+    comments = relationship("TicketComment", back_populates="ticket", cascade="all, delete-orphan")
+    attachments = relationship("TicketAttachment", back_populates="ticket", cascade="all, delete-orphan")
+
+
+class OrgTicket(Base):
+    __tablename__ = "org_tickets"
+    
+    id = Column(String, primary_key=True)
+    org_id = Column(String, ForeignKey("organizations.id"), nullable=False)
+    created_by = Column(String, ForeignKey("users.id"), nullable=False)
+    assigned_to = Column(String, ForeignKey("users.id"), nullable=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    ticket_type = Column(SQLEnum(TicketType), nullable=False)
+    status = Column(SQLEnum(TicketStatus), nullable=False, default=TicketStatus.OPEN)
+    priority = Column(SQLEnum(TicketPriority), nullable=False, default=TicketPriority.MEDIUM)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    resolved_at = Column(DateTime, nullable=True)
+    
+    organization = relationship("Organization")
+    creator = relationship("User", foreign_keys=[created_by])
+    assignee = relationship("User", foreign_keys=[assigned_to])
+    comments = relationship("TicketComment", back_populates="org_ticket", cascade="all, delete-orphan")
+    attachments = relationship("TicketAttachment", back_populates="org_ticket", cascade="all, delete-orphan")
+
+
+class TicketComment(Base):
+    __tablename__ = "ticket_comments"
+    
+    id = Column(String, primary_key=True)
+    project_ticket_id = Column(String, ForeignKey("project_tickets.id"), nullable=True)
+    org_ticket_id = Column(String, ForeignKey("org_tickets.id"), nullable=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    comment = Column(Text, nullable=False)
+    is_internal = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    ticket = relationship("ProjectTicket", back_populates="comments")
+    org_ticket = relationship("OrgTicket", back_populates="comments")
+    user = relationship("User")
+
+
+class TicketAttachment(Base):
+    __tablename__ = "ticket_attachments"
+    
+    id = Column(String, primary_key=True)
+    project_ticket_id = Column(String, ForeignKey("project_tickets.id"), nullable=True)
+    org_ticket_id = Column(String, ForeignKey("org_tickets.id"), nullable=True)
+    uploaded_by = Column(String, ForeignKey("users.id"), nullable=False)
+    file_name = Column(String, nullable=False)
+    file_url = Column(String, nullable=False)
+    file_type = Column(String, nullable=False)
+    file_size = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    ticket = relationship("ProjectTicket", back_populates="attachments")
+    org_ticket = relationship("OrgTicket", back_populates="attachments")
+    uploader = relationship("User")
 
 
 class SupportTicket(Base):

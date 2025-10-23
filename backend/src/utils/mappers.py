@@ -143,3 +143,76 @@ def db_org_invoice_to_pydantic(db_invoice: db_models.OrgInvoice) -> pydantic_mod
         paid_date=db_invoice.paid_date,
         created_at=db_invoice.created_at.isoformat() if db_invoice.created_at else None
     )
+
+
+def db_project_ticket_to_pydantic(db_ticket: db_models.ProjectTicket) -> pydantic_models.ProjectTicket:
+    """Convert database ProjectTicket to Pydantic ProjectTicket."""
+    return pydantic_models.ProjectTicket(
+        id=db_ticket.id,
+        project_id=db_ticket.project_id,
+        org_id=db_ticket.org_id,
+        created_by=db_ticket.created_by,
+        assigned_to=db_ticket.assigned_to,
+        title=db_ticket.title,
+        description=db_ticket.description,
+        ticket_type=db_ticket.ticket_type,
+        status=db_ticket.status,
+        priority=db_ticket.priority,
+        created_at=db_ticket.created_at.isoformat() if db_ticket.created_at else None,
+        updated_at=db_ticket.updated_at.isoformat() if db_ticket.updated_at else None,
+        resolved_at=db_ticket.resolved_at.isoformat() if db_ticket.resolved_at else None,
+        creator_name=db_ticket.creator.name if db_ticket.creator else None,
+        assignee_name=db_ticket.assignee.name if db_ticket.assignee else None
+    )
+
+
+def db_org_ticket_to_pydantic(db_ticket: db_models.OrgTicket) -> pydantic_models.OrgTicket:
+    """Convert database OrgTicket to Pydantic OrgTicket."""
+    return pydantic_models.OrgTicket(
+        id=db_ticket.id,
+        org_id=db_ticket.org_id,
+        created_by=db_ticket.created_by,
+        assigned_to=db_ticket.assigned_to,
+        title=db_ticket.title,
+        description=db_ticket.description,
+        ticket_type=db_ticket.ticket_type,
+        status=db_ticket.status,
+        priority=db_ticket.priority,
+        created_at=db_ticket.created_at.isoformat() if db_ticket.created_at else None,
+        updated_at=db_ticket.updated_at.isoformat() if db_ticket.updated_at else None,
+        resolved_at=db_ticket.resolved_at.isoformat() if db_ticket.resolved_at else None,
+        creator_name=db_ticket.creator.name if db_ticket.creator else None,
+        assignee_name=db_ticket.assignee.name if db_ticket.assignee else None,
+        org_name=db_ticket.organization.name if db_ticket.organization else None
+    )
+
+
+def db_ticket_comment_to_pydantic(db_comment: db_models.TicketComment) -> pydantic_models.TicketComment:
+    """Convert database TicketComment to Pydantic TicketComment."""
+    return pydantic_models.TicketComment(
+        id=db_comment.id,
+        project_ticket_id=db_comment.project_ticket_id,
+        org_ticket_id=db_comment.org_ticket_id,
+        user_id=db_comment.user_id,
+        comment=db_comment.comment,
+        is_internal=db_comment.is_internal,
+        created_at=db_comment.created_at.isoformat() if db_comment.created_at else None,
+        updated_at=db_comment.updated_at.isoformat() if db_comment.updated_at else None,
+        user_name=db_comment.user.name if db_comment.user else None
+    )
+
+
+def db_ticket_attachment_to_pydantic(db_attachment: db_models.TicketAttachment) -> pydantic_models.TicketAttachment:
+    """Convert database TicketAttachment to Pydantic TicketAttachment."""
+    return pydantic_models.TicketAttachment(
+        id=db_attachment.id,
+        project_ticket_id=db_attachment.project_ticket_id,
+        org_ticket_id=db_attachment.org_ticket_id,
+        uploaded_by=db_attachment.uploaded_by,
+        file_name=db_attachment.file_name,
+        file_url=db_attachment.file_url,
+        file_type=db_attachment.file_type,
+        file_size=db_attachment.file_size,
+        created_at=db_attachment.created_at.isoformat() if db_attachment.created_at else None,
+        uploader_name=db_attachment.uploader.name if db_attachment.uploader else None
+    )
