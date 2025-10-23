@@ -163,3 +163,114 @@ export interface OrgTeamMemberFormData {
   role: string
   password: string
 }
+
+export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed' | 'reopened'
+export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent'
+export type TicketType = 
+  | 'project_issue'
+  | 'design_change'
+  | 'correction'
+  | 'missing_item'
+  | 'interior_work'
+  | 'app_issue'
+  | 'invoice_issue'
+  | 'access_issue'
+  | 'plan_issue'
+  | 'other'
+
+export interface ProjectTicket {
+  id: string
+  project_id: string
+  org_id: string
+  created_by: string
+  assigned_to: string | null
+  title: string
+  description: string
+  ticket_type: TicketType
+  status: TicketStatus
+  priority: TicketPriority
+  created_at: string
+  updated_at: string
+  resolved_at: string | null
+  creator_name?: string
+  assignee_name?: string
+}
+
+export interface OrgTicket {
+  id: string
+  org_id: string
+  created_by: string
+  assigned_to: string | null
+  title: string
+  description: string
+  ticket_type: TicketType
+  status: TicketStatus
+  priority: TicketPriority
+  created_at: string
+  updated_at: string
+  resolved_at: string | null
+  creator_name?: string
+  assignee_name?: string
+  org_name?: string
+}
+
+export interface TicketComment {
+  id: string
+  project_ticket_id?: string
+  org_ticket_id?: string
+  user_id: string
+  comment: string
+  is_internal: boolean
+  created_at: string
+  updated_at: string
+  user_name?: string
+}
+
+export interface TicketAttachment {
+  id: string
+  project_ticket_id?: string
+  org_ticket_id?: string
+  uploaded_by: string
+  file_name: string
+  file_url: string
+  file_type: string
+  file_size: number
+  created_at: string
+  uploader_name?: string
+}
+
+export interface ProjectTicketWithDetails extends ProjectTicket {
+  comments: TicketComment[]
+  attachments: TicketAttachment[]
+}
+
+export interface OrgTicketWithDetails extends OrgTicket {
+  comments: TicketComment[]
+  attachments: TicketAttachment[]
+}
+
+export interface ProjectTicketFormData {
+  title: string
+  description: string
+  ticket_type: TicketType
+  priority: TicketPriority
+}
+
+export interface OrgTicketFormData {
+  title: string
+  description: string
+  ticket_type: TicketType
+  priority: TicketPriority
+}
+
+export interface TicketCommentFormData {
+  comment: string
+  is_internal: boolean
+}
+
+export interface TicketAttachmentFormData {
+  file_name: string
+  file_url: string
+  file_type: string
+  file_size: number
+}
