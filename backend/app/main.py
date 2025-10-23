@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.routes import (
     auth_router, admin_router, organizations_router,
-    projects_router, project_router, clients_router, client_router
+    projects_router, project_router, clients_router, client_router,
+    project_ticket_router, org_ticket_router, admin_ticket_router, my_tickets_router
 )
 from src.core import initialize_admin_user
 
@@ -25,6 +26,10 @@ app.include_router(projects_router)
 app.include_router(project_router)
 app.include_router(clients_router)
 app.include_router(client_router)
+app.include_router(project_ticket_router)
+app.include_router(org_ticket_router)
+app.include_router(admin_ticket_router)
+app.include_router(my_tickets_router)
 
 
 @app.get("/healthz")
