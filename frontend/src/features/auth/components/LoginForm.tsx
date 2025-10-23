@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Building2, Phone, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +10,7 @@ import { useAuth } from '../../../state/AuthContext'
 
 export function LoginForm() {
   const { login } = useAuth()
+  const navigate = useNavigate()
   const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -23,6 +25,7 @@ export function LoginForm() {
     try {
       const data = await authService.login(email, password)
       login(data.token, data.user)
+      navigate('/dashboard')
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Failed to login')
     } finally {
@@ -49,6 +52,7 @@ export function LoginForm() {
     try {
       const data = await authService.verifyOtp(phone, otp)
       login(data.token, data.user)
+      navigate('/dashboard')
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Failed to verify OTP')
     } finally {
