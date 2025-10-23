@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Home, Users, Calendar, FileText, UserPlus } from 'lucide-react'
+import { Home, Users, Calendar, FileText, UserPlus, LifeBuoy } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DashboardHeader } from '../../../components/shared/DashboardHeader'
 import { useAuth } from '../../../state/AuthContext'
@@ -10,6 +10,7 @@ import { ClientsTab } from './tabs/ClientsTab'
 import { TeamTab } from './tabs/TeamTab'
 import { CalendarTab } from './tabs/CalendarTab'
 import { InvoicesTab } from './tabs/InvoicesTab'
+import { TicketsTab } from './tabs/TicketsTab'
 
 export function OrganizationDashboard() {
   const { user, logout, token } = useAuth()
@@ -68,7 +69,7 @@ export function OrganizationDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-5">
+          <TabsList className="grid w-full max-w-3xl grid-cols-6">
             <TabsTrigger value="projects">
               <Home className="w-4 h-4 mr-2" />
               Projects
@@ -80,6 +81,10 @@ export function OrganizationDashboard() {
             <TabsTrigger value="team">
               <UserPlus className="w-4 h-4 mr-2" />
               Team
+            </TabsTrigger>
+            <TabsTrigger value="tickets">
+              <LifeBuoy className="w-4 h-4 mr-2" />
+              Tickets
             </TabsTrigger>
             <TabsTrigger value="calendar">
               <Calendar className="w-4 h-4 mr-2" />
@@ -105,6 +110,10 @@ export function OrganizationDashboard() {
           <TeamTab 
             teamMembers={teamMembers}
             onRefresh={fetchTeamMembers}
+          />
+          
+          <TicketsTab 
+            projects={projects}
           />
           
           <CalendarTab 

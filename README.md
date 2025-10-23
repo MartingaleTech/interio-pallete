@@ -1,6 +1,6 @@
 # Interio Palette
 
-**Last Updated:** October 16, 2025
+**Last Updated:** October 23, 2025
 
 A multi-tenant SaaS platform connecting interior designers with homeowners in India.
 
@@ -66,12 +66,14 @@ Priority order:
    - Mark resolved/unresolved
    - Version tracking
 
-3. **Support Ticket System** (12-15 hrs)
-   - Customer ticket creation
+3. **Support Ticket System** ✅ (Completed Oct 23, 2025)
+   - Project-level tickets for client issues
+   - Organization-level tickets for app/billing issues
    - Priority and category management
    - Assignment workflow
-   - Status tracking
-   - Comment threads
+   - Status tracking and lifecycle management
+   - Comment threads and attachments
+   - Admin ticket management dashboard
 
 4. **Real-time Chat** (20-25 hrs)
    - WebSocket integration
@@ -134,6 +136,8 @@ Interio Palette is a comprehensive platform that enables:
 - View and manage organization subscriptions
 - Generate organization invoices
 - Track all organizations and their status
+- View and manage organization-level support tickets
+- Assign and update ticket status
 
 ### Organization Dashboard
 - Manage multiple projects
@@ -142,6 +146,8 @@ Interio Palette is a comprehensive platform that enables:
 - Schedule meetings and milestones via calendar
 - Upload and share project designs
 - Create and track project invoices
+- Support ticket system for project issues and changes
+- View and manage all project tickets
 
 ### Client Portal
 - View assigned projects
@@ -311,6 +317,35 @@ Use the phone number provided during organization creation to log in via OTP.
 ### Client Endpoints
 - `GET /api/clients/projects` - List client's projects
 
+### Ticket Endpoints
+**Project Tickets:**
+- `POST /api/projects/{project_id}/tickets` - Create project ticket
+- `GET /api/projects/{project_id}/tickets` - List project tickets
+- `GET /api/projects/{project_id}/tickets/{ticket_id}` - Get ticket details
+- `PATCH /api/projects/{project_id}/tickets/{ticket_id}` - Update ticket
+- `DELETE /api/projects/{project_id}/tickets/{ticket_id}` - Delete ticket
+- `POST /api/projects/{project_id}/tickets/{ticket_id}/comments` - Add comment
+- `POST /api/projects/{project_id}/tickets/{ticket_id}/attachments` - Add attachment
+
+**Organization Tickets:**
+- `POST /api/organizations/tickets` - Create org ticket
+- `GET /api/organizations/tickets` - List org tickets
+- `GET /api/organizations/tickets/{ticket_id}` - Get ticket details
+- `PATCH /api/organizations/tickets/{ticket_id}` - Update ticket
+- `DELETE /api/organizations/tickets/{ticket_id}` - Delete ticket
+- `POST /api/organizations/tickets/{ticket_id}/comments` - Add comment
+- `POST /api/organizations/tickets/{ticket_id}/attachments` - Add attachment
+
+**Admin Ticket Management:**
+- `GET /api/admin/tickets` - List all org tickets
+- `GET /api/admin/tickets/{ticket_id}` - Get ticket details
+- `PATCH /api/admin/tickets/{ticket_id}` - Update ticket status/assignment
+- `POST /api/admin/tickets/{ticket_id}/comments` - Add admin comment
+
+**My Tickets:**
+- `GET /api/my-tickets/assigned` - Get my assigned tickets (project + org)
+- `GET /api/my-tickets/projects/assigned` - Get my assigned project tickets
+
 ## Data Models
 
 ### User
@@ -344,6 +379,26 @@ Use the phone number provided during organization creation to log in via OTP.
 - id, project_id, org_id, invoice_number
 - amount, tax, total, payment_status
 - due_date, paid_date, created_at
+
+### Project Ticket
+- id, project_id, org_id, created_by, assigned_to
+- title, description, ticket_type, status, priority
+- created_at, updated_at, resolved_at
+
+### Organization Ticket
+- id, org_id, created_by, assigned_to
+- title, description, ticket_type, status, priority
+- created_at, updated_at, resolved_at
+
+### Ticket Comment
+- id, project_ticket_id/org_ticket_id, user_id
+- comment, is_internal
+- created_at, updated_at
+
+### Ticket Attachment
+- id, project_ticket_id/org_ticket_id, uploaded_by
+- file_name, file_url, file_type, file_size
+- created_at
 
 ## Development Notes
 
@@ -387,10 +442,15 @@ Payment processing placeholders are included. For production, integrate with:
 
 ## Future Enhancements
 
-### Phase 1 (Planned - Next Priority)
+### Phase 1 (In Progress)
 - File upload and storage system for project designs
 - Comment/notes system for attachments
-- Support ticket system
+- ✅ Support ticket system (Completed Oct 23, 2025)
+  - Two-level ticketing: project-level and org-level
+  - Full lifecycle management with status tracking
+  - Comments and attachments support
+  - Assignment and priority management
+  - Admin dashboard for ticket management
 - Real-time chat between designers and clients
 
 ### Phase 2
