@@ -1,11 +1,16 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './state/AuthContext'
 import { LoginForm } from './features/auth/components/LoginForm'
 import { AdminDashboard } from './features/admin/components/AdminDashboard'
 import { OrganizationDashboard } from './features/organization/components/OrganizationDashboard'
 import { ClientDashboard } from './features/client/components/ClientDashboard'
+import { LandingPage } from './pages/landing/LandingPage'
+import { About } from './pages/About'
+import { Contact } from './pages/Contact'
+import { Support } from './pages/Support'
 import './App.css'
 
-function AppContent() {
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
 
   if (isLoading) {
@@ -20,7 +25,17 @@ function AppContent() {
   }
 
   if (!user) {
-    return <LoginForm />
+    return <Navigate to="/login" replace />
+  }
+
+  return <>{children}</>
+}
+
+function DashboardRouter() {
+  const { user } = useAuth()
+
+  if (!user) {
+    return <Navigate to="/login" replace />
   }
 
   if (user.role === 'admin') {
@@ -31,14 +46,31 @@ function AppContent() {
     return <ClientDashboard />
   }
 
-  return null
+  return <Navigate to="/login" replace />
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardRouter />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
 
