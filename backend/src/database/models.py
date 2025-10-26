@@ -145,12 +145,27 @@ class ProjectDesign(Base):
     project_id = Column(String, ForeignKey("projects.id"), nullable=False)
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
+    file_name = Column(String, nullable=False)
     file_url = Column(String, nullable=False)
     file_type = Column(String, nullable=False)
+    file_size = Column(Integer, nullable=False, default=0)
+    uploaded_by_id = Column(String, ForeignKey("users.id"), nullable=False)
     uploaded_by = Column(String, nullable=False)
     uploaded_at = Column(DateTime, default=datetime.utcnow)
+    version = Column(Integer, nullable=False, default=1)
+    parent_id = Column(String, ForeignKey("project_designs.id"), nullable=True)
+    is_latest_version = Column(Boolean, nullable=False, default=True)
+    thumbnail_url = Column(String, nullable=True)
+    is_public = Column(Boolean, nullable=False, default=False)
+    download_count = Column(Integer, nullable=False, default=0)
+    is_deleted = Column(Boolean, nullable=False, default=False)
     
     project = relationship("Project", back_populates="designs")
+    uploader = relationship("User", foreign_keys=[uploaded_by_id])
+    parent = relationship("ProjectDesign", remote_side=[id], foreign_keys=[parent_id])
+    comments = relationship("FileComment", back_populates="file", cascade="all, delete-orphan")
+    permissions = relationship("FilePermission", back_populates="file", cascade="all, delete-orphan")
+    audit_logs = relationship("FileAuditLog", back_populates="file", cascade="all, delete-orphan")
 
 
 class Invoice(Base):
@@ -351,4 +366,62 @@ class ProjectDailyUpdate(Base):
     
     project = relationship("Project", back_populates="daily_updates")
     organization = relationship("Organization")
+    user = relationship("User")
+
+
+class FileComment(Base):
+    __tablename__ = "file_comments"
+    
+    id = Column(String, primary_key=True)
+    file_id = Column(String, ForeignKey("project_designs.id"), nullable=False)
+    project_id = Column(String, ForeignKey("projects.id"), nullable=False)
+    org_id = Column(String, ForeignKey("organizations.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    user_name = Column(String, nullable=False)
+    comment = Column(Text, nullable=False)
+    parent_comment_id = Column(String, ForeignKey("file_comments.id"), nullable=True)
+    mentions = Column(Text, nullable=True)
+    is_resolved = Column(Boolean, nullable=False, default=False)
+    resolved_by = Column(String, ForeignKey("users.id"), nullable=True)
+    resolved_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    file = relationship("ProjectDesign", back_populates="comments")
+    project = relationship("Project")
+    organization = relationship("Organization")
+    user = relationship("User", foreign_keys=[user_id])
+    resolver = relationship("User", foreign_keys=[resolved_by])
+    parent_comment = relationship("FileComment", remote_side=[id], foreign_keys=[parent_comment_id])
+
+
+class FilePermission(Base):
+    __tablename__ = "file_permissions"
+    
+    id = Column(String, primary_key=True)
+    file_id = Column(String, ForeignKey("project_designs.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=True)
+    role = Column(String, nullable=True)
+    can_view = Column(Boolean, nullable=False, default=True)
+    can_download = Column(Boolean, nullable=False, default=True)
+    can_comment = Column(Boolean, nullable=False, default=True)
+    can_delete = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    file = relationship("ProjectDesign", back_populates="permissions")
+    user = relationship("User")
+
+
+class FileAuditLog(Base):
+    __tablename__ = "file_audit_logs"
+    
+    id = Column(String, primary_key=True)
+    file_id = Column(String, ForeignKey("project_designs.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    user_name = Column(String, nullable=False)
+    action = Column(String, nullable=False)
+    action_metadata = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    file = relationship("ProjectDesign", back_populates="audit_logs")
     user = relationship("User")

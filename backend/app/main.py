@@ -6,6 +6,7 @@ from src.routes import (
     project_ticket_router, org_ticket_router, admin_ticket_router, my_tickets_router
 )
 from src.routes.project_features import notification_router, daily_update_router
+from src.routes.file_management import router as file_management_router
 from src.core import initialize_admin_user
 
 app = FastAPI()
@@ -33,6 +34,7 @@ app.include_router(admin_ticket_router)
 app.include_router(my_tickets_router)
 app.include_router(notification_router)
 app.include_router(daily_update_router)
+app.include_router(file_management_router)
 
 
 @app.get("/healthz")
