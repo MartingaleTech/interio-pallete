@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Building2, Menu, X } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const navigate = useNavigate()
 
   const navigation = [
-    { name: 'Features', href: '#features' },
-    { name: 'Pricing', href: '#pricing' },
+    { name: 'Features', href: '/#features' },
+    { name: 'Pricing', href: '/#pricing' },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
     { name: 'Support', href: '/support' }
@@ -27,11 +28,25 @@ export function Header() {
 
           <div className="hidden md:flex items-center gap-8">
             {navigation.map((item) => (
-              item.href.startsWith('#') ? (
+              item.href.startsWith('/#') ? (
                 <a
                   key={item.name}
                   href={item.href}
                   className="text-gray-600 hover:text-purple-600 font-medium transition-colors"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    const hash = item.href.split('#')[1]
+                    navigate('/')
+                    setTimeout(() => {
+                      const element = document.getElementById(hash)
+                      if (element) {
+                        const headerOffset = 80
+                        const elementPosition = element.getBoundingClientRect().top
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+                        window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+                      }
+                    }, 100)
+                  }}
                 >
                   {item.name}
                 </a>
@@ -48,12 +63,12 @@ export function Header() {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" onClick={() => window.location.href = '/login'}>
+            <Button variant="ghost" onClick={() => navigate('/login')}>
               Sign In
             </Button>
             <Button 
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-              onClick={() => window.location.href = '/login'}
+              onClick={() => navigate('/login')}
             >
               Get Started
             </Button>
@@ -74,12 +89,26 @@ export function Header() {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 space-y-4 border-t">
             {navigation.map((item) => (
-              item.href.startsWith('#') ? (
+              item.href.startsWith('/#') ? (
                 <a
                   key={item.name}
                   href={item.href}
                   className="block text-gray-600 hover:text-purple-600 font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setMobileMenuOpen(false)
+                    const hash = item.href.split('#')[1]
+                    navigate('/')
+                    setTimeout(() => {
+                      const element = document.getElementById(hash)
+                      if (element) {
+                        const headerOffset = 80
+                        const elementPosition = element.getBoundingClientRect().top
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+                        window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+                      }
+                    }, 100)
+                  }}
                 >
                   {item.name}
                 </a>
@@ -95,12 +124,12 @@ export function Header() {
               )
             ))}
             <div className="flex flex-col gap-2 pt-4">
-              <Button variant="outline" className="w-full" onClick={() => window.location.href = '/login'}>
+              <Button variant="outline" className="w-full" onClick={() => { setMobileMenuOpen(false); navigate('/login'); }}>
                 Sign In
               </Button>
               <Button 
                 className="w-full bg-gradient-to-r from-purple-600 to-blue-600"
-                onClick={() => window.location.href = '/login'}
+                onClick={() => { setMobileMenuOpen(false); navigate('/login'); }}
               >
                 Get Started
               </Button>
