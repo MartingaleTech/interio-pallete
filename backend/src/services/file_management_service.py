@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from src.database import models
 from src.repositories.team_repository import ProjectDesignRepository
 from src.repositories.file_repository import FileAuditLogRepository, FilePermissionRepository
+from src.repositories.notification_repository import ProjectNotificationRepository
 from src.services.file_storage_service import FileStorageService
 from src.utils.file_validation import validate_upload_file, sanitize_filename, get_file_extension, is_image_file
 
@@ -20,6 +21,7 @@ class FileManagementService:
         self.design_repo = ProjectDesignRepository(db)
         self.audit_repo = FileAuditLogRepository(db)
         self.permission_repo = FilePermissionRepository(db)
+        self.notification_repo = ProjectNotificationRepository(db)
         self.storage_service = FileStorageService()
     
     async def upload_file(
@@ -112,6 +114,20 @@ class FileManagementService:
             action="upload",
             metadata={"file_name": sanitized_filename, "file_size": file_size}
         )
+        
+        notification_id = str(uuid.uuid4())
+        notification_data = {
+            "id": notification_id,
+            "project_id": project_id,
+            "org_id": org_id,
+            "user_id": None,
+            "notification_type": "file_uploaded",
+            "title": "New File Uploaded",
+            "message": f"{user_name} uploaded {title} ({sanitized_filename})",
+            "is_read": False,
+            "created_at": datetime.utcnow()
+        }
+        self.notification_repo.create(notification_data)
         
         return design
     
