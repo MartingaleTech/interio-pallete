@@ -60,11 +60,10 @@ export const fileService = {
   async uploadFile(token: string, file: File, data: FileUploadData) {
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('project_id', data.project_id)
     formData.append('title', data.title)
     formData.append('description', data.description)
 
-    const res = await fetch(`${API_URL}/api/files/upload`, {
+    const res = await fetch(`${API_URL}/api/projects/${data.project_id}/files/upload`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`
