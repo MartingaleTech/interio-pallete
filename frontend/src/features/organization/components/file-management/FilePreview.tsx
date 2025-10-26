@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Download, AlertCircle } from 'lucide-react'
 import { fileService, FileMetadata } from '../../../../services/fileService'
+import '@google/model-viewer'
 
 interface FilePreviewProps {
   fileId: string
@@ -100,8 +101,30 @@ export function FilePreview({ fileId, token, isOpen, onClose }: FilePreviewProps
 
     if (
       metadata.file_type.includes('model/') ||
-      metadata.file_name.match(/\.(obj|fbx|skp|stl|gltf|glb)$/i)
+      metadata.file_name.match(/\.(gltf|glb)$/i)
     ) {
+      return (
+        <div className="h-[70vh] w-full bg-gray-100 rounded-lg overflow-hidden">
+          <model-viewer
+            src={downloadUrl}
+            alt={metadata.file_name}
+            auto-rotate
+            camera-controls
+            shadow-intensity="1"
+            style={{ width: '100%', height: '100%' }}
+          >
+            <div slot="progress-bar" className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <p className="text-gray-500">Loading 3D model...</p>
+              </div>
+            </div>
+          </model-viewer>
+        </div>
+      )
+    }
+
+    if (metadata.file_name.match(/\.(obj|fbx|skp|stl)$/i)) {
       return (
         <div className="flex items-center justify-center h-64 sm:h-96 bg-gray-100 rounded-lg">
           <div className="text-center p-6">
@@ -115,7 +138,7 @@ export function FilePreview({ fileId, token, isOpen, onClose }: FilePreviewProps
               {metadata.file_name}
             </p>
             <p className="text-xs text-gray-400 mb-4">
-              3D preview coming soon. Download to view in your 3D software.
+              Preview not available for this format. Supported formats: GLTF, GLB
             </p>
             <Button onClick={handleDownload} size="sm">
               <Download className="w-4 h-4 mr-2" />
