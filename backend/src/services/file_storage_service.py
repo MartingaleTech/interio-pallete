@@ -181,7 +181,14 @@ class FileStorageService:
             Presigned URL
         """
         if self.use_local:
-            return file_url
+            try:
+                rel_path = os.path.relpath(file_url, self.local_storage_path)
+                if rel_path.startswith('..'):
+                    raise ValueError("File path is outside storage directory")
+                web_path = rel_path.replace(os.sep, '/')
+                return f"/files/{web_path}"
+            except (ValueError, OSError):
+                return file_url
         
         if file_url.startswith('s3://'):
             file_url = file_url[5:]

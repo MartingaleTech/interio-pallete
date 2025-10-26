@@ -235,7 +235,7 @@ class FileManagementService:
         if not design:
             raise HTTPException(status_code=404, detail="File not found")
         
-        download_url = await self.storage_service.generate_presigned_url(design.file_url)
+        download_url = self.storage_service.generate_presigned_url(design.file_url)
         
         self.design_repo.increment_download_count(file_id)
         
