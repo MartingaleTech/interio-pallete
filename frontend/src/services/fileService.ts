@@ -92,6 +92,7 @@ export const fileService = {
 
   async getFileMetadata(token: string, fileId: string) {
     const res = await fetch(`${API_URL}/api/files/${fileId}`, {
+    const res = await fetch(`${API_URL}/api/files/${fileId}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch file metadata')
@@ -187,6 +188,7 @@ export const fileService = {
     formData.append('file', file)
 
     const res = await fetch(`${API_URL}/api/files/${fileId}/versions/upload`, {
+    const res = await fetch(`${API_URL}/api/files/${fileId}/versions/upload`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`
@@ -205,6 +207,8 @@ export const fileService = {
     return res.json()
   },
 
+  async restoreVersion(token: string, versionId: string) {
+    const res = await fetch(`${API_URL}/api/files/versions/${versionId}/restore`, {
   async restoreVersion(token: string, versionId: string) {
     const res = await fetch(`${API_URL}/api/files/versions/${versionId}/restore`, {
       method: 'POST',
