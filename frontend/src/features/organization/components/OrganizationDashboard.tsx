@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Home, Users, Calendar, FileText, UserPlus, LifeBuoy } from 'lucide-react'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { DashboardHeader } from '../../../components/shared/DashboardHeader'
 import { useAuth } from '../../../state/AuthContext'
 import { organizationService } from '../../../services/organizationService'
@@ -107,34 +107,46 @@ export function OrganizationDashboard() {
             </TabsTrigger>
           </TabsList>
 
-          <ProjectsTab 
-            projects={projects} 
-            clients={clients}
-            onRefresh={fetchProjects}
-            onViewProject={setSelectedProject}
-          />
+          <TabsContent value="projects">
+            <ProjectsTab 
+              projects={projects} 
+              clients={clients}
+              onRefresh={fetchProjects}
+              onViewProject={setSelectedProject}
+            />
+          </TabsContent>
           
-          <ClientsTab 
-            clients={clients}
-            onRefresh={fetchClients}
-          />
+          <TabsContent value="clients">
+            <ClientsTab 
+              clients={clients}
+              onRefresh={fetchClients}
+            />
+          </TabsContent>
           
-          <TeamTab 
-            teamMembers={teamMembers}
-            onRefresh={fetchTeamMembers}
-          />
+          <TabsContent value="team">
+            <TeamTab 
+              teamMembers={teamMembers}
+              onRefresh={fetchTeamMembers}
+            />
+          </TabsContent>
           
-          <TicketsTab 
-            projects={projects}
-          />
+          <TabsContent value="tickets">
+            <TicketsTab 
+              projects={projects}
+            />
+          </TabsContent>
           
-          <CalendarTab 
-            projects={projects}
-          />
+          <TabsContent value="calendar">
+            <CalendarTab 
+              projects={projects}
+            />
+          </TabsContent>
           
-          <InvoicesTab 
-            projects={projects}
-          />
+          <TabsContent value="invoices">
+            <InvoicesTab 
+              projects={projects}
+            />
+          </TabsContent>
         </Tabs>
       </main>
     </div>
