@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from src.routes import (
     auth_router, admin_router, organizations_router,
     projects_router, project_router, clients_router, client_router,
@@ -8,6 +9,8 @@ from src.routes import (
 from src.routes.project_features import notification_router, daily_update_router
 from src.routes.file_management import router as file_management_router
 from src.core import initialize_admin_user
+from src.config.storage import storage_config
+import os
 
 app = FastAPI()
 
@@ -36,6 +39,10 @@ app.include_router(my_tickets_router)
 app.include_router(notification_router)
 app.include_router(daily_update_router)
 app.include_router(file_management_router)
+
+if storage_config.USE_LOCAL_STORAGE:
+    os.makedirs(storage_config.LOCAL_STORAGE_PATH, exist_ok=True)
+    app.mount("/files", StaticFiles(directory=storage_config.LOCAL_STORAGE_PATH), name="files")
 
 
 @app.get("/healthz")
