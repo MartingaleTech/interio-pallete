@@ -74,12 +74,20 @@ export const fileService = {
     return res.json()
   },
 
-  async listFiles(token: string, projectId: string) {
+  async listFiles(token: string, projectId: string): Promise<FileMetadata[]> {
     const res = await fetch(`${API_URL}/api/projects/${projectId}/files`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch files')
-    return res.json()
+    const json = await res.json()
+    
+    const files = Array.isArray(json?.files) ? json.files : []
+    
+    return files.map((file: any) => ({
+      ...file,
+      uploaded_by_name: file.uploaded_by || file.uploaded_by_name || 'Unknown',
+      created_at: file.uploaded_at || file.created_at
+    }))
   },
 
   async getFileMetadata(token: string, fileId: string) {
