@@ -11,6 +11,7 @@ from src.repositories import (
     ProjectRepository, ClientRepository, UserRepository,
     TeamMemberRepository, CalendarEventRepository, ProjectDesignRepository
 )
+from src.repositories.notification_repository import ProjectNotificationRepository
 from src.utils.mappers import (
     db_project_to_pydantic, db_team_member_to_pydantic,
     db_calendar_event_to_pydantic, db_project_design_to_pydantic
@@ -81,6 +82,7 @@ def add_team_member_to_project(db: Session, user: User, project_id: str, member:
     project_repo = ProjectRepository(db)
     user_repo = UserRepository(db)
     team_repo = TeamMemberRepository(db)
+    notification_repo = ProjectNotificationRepository(db)
     
     db_project = project_repo.get_by_id(project_id)
     if not db_project:
@@ -102,6 +104,20 @@ def add_team_member_to_project(db: Session, user: User, project_id: str, member:
         "role": member.role
     }
     db_member = team_repo.create(team_data)
+    
+    notification_id = str(uuid.uuid4())
+    notification_data = {
+        "id": notification_id,
+        "project_id": project_id,
+        "org_id": db_project.org_id,
+        "user_id": member.user_id,
+        "notification_type": "team_member_added",
+        "title": "New Team Member Added",
+        "message": f"{db_user.name} has been added to the project as {member.role}",
+        "is_read": False,
+        "created_at": datetime.utcnow()
+    }
+    notification_repo.create(notification_data)
     
     return db_team_member_to_pydantic(db_member)
 
