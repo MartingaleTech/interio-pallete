@@ -14,11 +14,11 @@ export function LandingPage() {
       <Header />
       <main>
         <Hero />
-        <div id="features">
+        <div id="features" className="scroll-mt-20">
           <Features />
         </div>
         <HowItWorks />
-        <div id="pricing">
+        <div id="pricing" className="scroll-mt-20">
           <Pricing />
         </div>
         <Testimonials />
