@@ -90,6 +90,8 @@ class Project(Base):
     calendar_events = relationship("CalendarEvent", back_populates="project", cascade="all, delete-orphan")
     designs = relationship("ProjectDesign", back_populates="project", cascade="all, delete-orphan")
     invoices = relationship("Invoice", back_populates="project", cascade="all, delete-orphan")
+    notifications = relationship("ProjectNotification", back_populates="project", cascade="all, delete-orphan")
+    daily_updates = relationship("ProjectDailyUpdate", back_populates="project", cascade="all, delete-orphan")
 
 
 class Client(Base):
@@ -314,3 +316,39 @@ class AdminNotification(Base):
     
     admin = relationship("User")
     organization = relationship("Organization")
+
+
+class ProjectNotification(Base):
+    __tablename__ = "project_notifications"
+    
+    id = Column(String, primary_key=True)
+    project_id = Column(String, ForeignKey("projects.id"), nullable=False)
+    org_id = Column(String, ForeignKey("organizations.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=True)
+    notification_type = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    project = relationship("Project", back_populates="notifications")
+    organization = relationship("Organization")
+    user = relationship("User")
+
+
+class ProjectDailyUpdate(Base):
+    __tablename__ = "project_daily_updates"
+    
+    id = Column(String, primary_key=True)
+    project_id = Column(String, ForeignKey("projects.id"), nullable=False)
+    org_id = Column(String, ForeignKey("organizations.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    user_name = Column(String, nullable=False)
+    update_text = Column(Text, nullable=False)
+    attachments = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    project = relationship("Project", back_populates="daily_updates")
+    organization = relationship("Organization")
+    user = relationship("User")

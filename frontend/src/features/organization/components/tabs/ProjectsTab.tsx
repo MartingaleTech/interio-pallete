@@ -16,9 +16,10 @@ interface ProjectsTabProps {
   projects: Project[]
   clients: Client[]
   onRefresh: () => void
+  onViewProject?: (project: Project) => void
 }
 
-export function ProjectsTab({ projects, clients, onRefresh }: ProjectsTabProps) {
+export function ProjectsTab({ projects, clients, onRefresh, onViewProject }: ProjectsTabProps) {
   const { token } = useAuth()
   const [showDialog, setShowDialog] = useState(false)
   const [formData, setFormData] = useState<ProjectFormData>({
@@ -159,6 +160,16 @@ export function ProjectsTab({ projects, clients, onRefresh }: ProjectsTabProps) 
               <div className="text-sm">
                 <span className="font-medium">Start:</span> {new Date(project.start_date).toLocaleDateString()}
               </div>
+              {onViewProject && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full mt-2"
+                  onClick={() => onViewProject(project)}
+                >
+                  View Project
+                </Button>
+              )}
             </CardContent>
           </Card>
         ))}

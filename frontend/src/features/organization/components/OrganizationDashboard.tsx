@@ -11,6 +11,7 @@ import { TeamTab } from './tabs/TeamTab'
 import { CalendarTab } from './tabs/CalendarTab'
 import { InvoicesTab } from './tabs/InvoicesTab'
 import { TicketsTab } from './tabs/TicketsTab'
+import { ProjectDashboard } from './ProjectDashboard'
 
 export function OrganizationDashboard() {
   const { user, logout, token } = useAuth()
@@ -18,6 +19,7 @@ export function OrganizationDashboard() {
   const [projects, setProjects] = useState<Project[]>([])
   const [clients, setClients] = useState<Client[]>([])
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   useEffect(() => {
     if (token) {
@@ -59,6 +61,15 @@ export function OrganizationDashboard() {
 
   if (!user) return null
 
+  if (selectedProject) {
+    return (
+      <ProjectDashboard 
+        project={selectedProject} 
+        onBack={() => setSelectedProject(null)}
+      />
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <DashboardHeader 
@@ -69,30 +80,30 @@ export function OrganizationDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-3xl grid-cols-6">
-            <TabsTrigger value="projects">
-              <Home className="w-4 h-4 mr-2" />
-              Projects
+          <TabsList className="grid w-full max-w-3xl grid-cols-6 gap-1">
+            <TabsTrigger value="projects" className="text-xs sm:text-sm">
+              <Home className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Projects</span>
             </TabsTrigger>
-            <TabsTrigger value="clients">
-              <Users className="w-4 h-4 mr-2" />
-              Clients
+            <TabsTrigger value="clients" className="text-xs sm:text-sm">
+              <Users className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Clients</span>
             </TabsTrigger>
-            <TabsTrigger value="team">
-              <UserPlus className="w-4 h-4 mr-2" />
-              Team
+            <TabsTrigger value="team" className="text-xs sm:text-sm">
+              <UserPlus className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Team</span>
             </TabsTrigger>
-            <TabsTrigger value="tickets">
-              <LifeBuoy className="w-4 h-4 mr-2" />
-              Tickets
+            <TabsTrigger value="tickets" className="text-xs sm:text-sm">
+              <LifeBuoy className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Tickets</span>
             </TabsTrigger>
-            <TabsTrigger value="calendar">
-              <Calendar className="w-4 h-4 mr-2" />
-              Calendar
+            <TabsTrigger value="calendar" className="text-xs sm:text-sm">
+              <Calendar className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Calendar</span>
             </TabsTrigger>
-            <TabsTrigger value="invoices">
-              <FileText className="w-4 h-4 mr-2" />
-              Invoices
+            <TabsTrigger value="invoices" className="text-xs sm:text-sm">
+              <FileText className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Invoices</span>
             </TabsTrigger>
           </TabsList>
 
@@ -100,6 +111,7 @@ export function OrganizationDashboard() {
             projects={projects} 
             clients={clients}
             onRefresh={fetchProjects}
+            onViewProject={setSelectedProject}
           />
           
           <ClientsTab 
