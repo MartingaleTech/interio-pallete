@@ -274,3 +274,39 @@ export interface TicketAttachmentFormData {
   file_type: string
   file_size: number
 }
+
+export interface ProjectNotification {
+  id: string
+  project_id: string
+  org_id: string
+  user_id?: string
+  notification_type: string
+  title: string
+  message: string
+  is_read: boolean
+  created_at: string
+}
+
+export interface ProjectNotificationFormData {
+  notification_type: string
+  title: string
+  message: string
+  user_id?: string
+}
+
+export interface ProjectDailyUpdate {
+  id: string
+  project_id: string
+  org_id: string
+  user_id: string
+  user_name: string
+  update_text: string
+  attachments?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ProjectDailyUpdateFormData {
+  update_text: string
+  attachments?: string
+}

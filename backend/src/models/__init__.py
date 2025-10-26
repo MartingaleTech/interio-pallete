@@ -15,6 +15,8 @@ from .ticket import (
     OrgTicket, OrgTicketCreate, OrgTicketUpdate, OrgTicketWithDetails,
     TicketComment, TicketCommentCreate, TicketAttachment, TicketAttachmentCreate
 )
+from .notification import ProjectNotification, ProjectNotificationCreate, ProjectNotificationUpdate
+from .daily_update import ProjectDailyUpdate, ProjectDailyUpdateCreate, ProjectDailyUpdateUpdate
 
 __all__ = [
     "UserRole",
@@ -67,4 +69,10 @@ __all__ = [
     "TicketCommentCreate",
     "TicketAttachment",
     "TicketAttachmentCreate",
+    "ProjectNotification",
+    "ProjectNotificationCreate",
+    "ProjectNotificationUpdate",
+    "ProjectDailyUpdate",
+    "ProjectDailyUpdateCreate",
+    "ProjectDailyUpdateUpdate",
 ]

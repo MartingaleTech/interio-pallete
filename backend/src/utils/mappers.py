@@ -216,3 +216,35 @@ def db_ticket_attachment_to_pydantic(db_attachment: db_models.TicketAttachment) 
         created_at=db_attachment.created_at.isoformat() if db_attachment.created_at else None,
         uploader_name=db_attachment.uploader.name if db_attachment.uploader else None
     )
+
+
+def db_project_notification_to_pydantic(db_notification: db_models.ProjectNotification):
+    """Convert database ProjectNotification to Pydantic ProjectNotification."""
+    from src.models.notification import ProjectNotification
+    return ProjectNotification(
+        id=db_notification.id,
+        project_id=db_notification.project_id,
+        org_id=db_notification.org_id,
+        user_id=db_notification.user_id,
+        notification_type=db_notification.notification_type,
+        title=db_notification.title,
+        message=db_notification.message,
+        is_read=db_notification.is_read,
+        created_at=db_notification.created_at.isoformat() if db_notification.created_at else None
+    )
+
+
+def db_project_daily_update_to_pydantic(db_update: db_models.ProjectDailyUpdate):
+    """Convert database ProjectDailyUpdate to Pydantic ProjectDailyUpdate."""
+    from src.models.daily_update import ProjectDailyUpdate
+    return ProjectDailyUpdate(
+        id=db_update.id,
+        project_id=db_update.project_id,
+        org_id=db_update.org_id,
+        user_id=db_update.user_id,
+        user_name=db_update.user_name,
+        update_text=db_update.update_text,
+        attachments=db_update.attachments,
+        created_at=db_update.created_at.isoformat() if db_update.created_at else None,
+        updated_at=db_update.updated_at.isoformat() if db_update.updated_at else None
+    )
