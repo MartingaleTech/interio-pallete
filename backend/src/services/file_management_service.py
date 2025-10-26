@@ -56,23 +56,26 @@ class FileManagementService:
         file_id = str(uuid.uuid4())
         sanitized_filename = sanitize_filename(file.filename)
         
-        file_url = await self.storage_service.upload_file(
-            file=file,
+        file_content = await file.read()
+        content_type = file.content_type or "application/octet-stream"
+        file_size = len(file_content)
+        
+        file_url = self.storage_service.upload_file(
+            file_content=file_content,
             org_id=org_id,
             project_id=project_id,
             file_id=file_id,
-            filename=sanitized_filename
+            filename=sanitized_filename,
+            content_type=content_type,
+            version=1
         )
         
-        file.file.seek(0, 2)
-        file_size = file.file.tell()
-        file.file.seek(0)
-        
         thumbnail_url = None
-        if is_image_file(file.content_type or ""):
+        if is_image_file(content_type):
             try:
-                thumbnail_url = await self.storage_service.generate_thumbnail(
-                    file=file,
+                thumbnail_url = self.storage_service.generate_thumbnail(
+                    file_content=file_content,
+                    file_type=content_type,
                     org_id=org_id,
                     project_id=project_id,
                     file_id=file_id
@@ -149,23 +152,26 @@ class FileManagementService:
         file_id = str(uuid.uuid4())
         sanitized_filename = sanitize_filename(file.filename)
         
-        file_url = await self.storage_service.upload_file(
-            file=file,
+        file_content = await file.read()
+        content_type = file.content_type or "application/octet-stream"
+        file_size = len(file_content)
+        
+        file_url = self.storage_service.upload_file(
+            file_content=file_content,
             org_id=org_id,
             project_id=parent_design.project_id,
             file_id=file_id,
-            filename=sanitized_filename
+            filename=sanitized_filename,
+            content_type=content_type,
+            version=next_version
         )
         
-        file.file.seek(0, 2)
-        file_size = file.file.tell()
-        file.file.seek(0)
-        
         thumbnail_url = None
-        if is_image_file(file.content_type or ""):
+        if is_image_file(content_type):
             try:
-                thumbnail_url = await self.storage_service.generate_thumbnail(
-                    file=file,
+                thumbnail_url = self.storage_service.generate_thumbnail(
+                    file_content=file_content,
+                    file_type=content_type,
                     org_id=org_id,
                     project_id=parent_design.project_id,
                     file_id=file_id
