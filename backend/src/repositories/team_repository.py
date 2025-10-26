@@ -59,6 +59,67 @@ class ProjectDesignRepository:
         self.db.refresh(db_design)
         return db_design
     
-    def get_by_project_id(self, project_id: str) -> List[models.ProjectDesign]:
+    def get_by_id(self, design_id: str) -> models.ProjectDesign:
+        """Get a design by ID."""
+        return self.db.query(models.ProjectDesign).filter(
+            models.ProjectDesign.id == design_id,
+            models.ProjectDesign.is_deleted == False
+        ).first()
+    
+    def get_by_project_id(self, project_id: str, include_deleted: bool = False) -> List[models.ProjectDesign]:
         """Get all designs for a project."""
-        return self.db.query(models.ProjectDesign).filter(models.ProjectDesign.project_id == project_id).all()
+        query = self.db.query(models.ProjectDesign).filter(
+            models.ProjectDesign.project_id == project_id
+        )
+        if not include_deleted:
+            query = query.filter(models.ProjectDesign.is_deleted == False)
+        return query.order_by(models.ProjectDesign.uploaded_at.desc()).all()
+    
+    def get_latest_versions(self, project_id: str) -> List[models.ProjectDesign]:
+        """Get only the latest versions of designs for a project."""
+        return self.db.query(models.ProjectDesign).filter(
+            models.ProjectDesign.project_id == project_id,
+            models.ProjectDesign.is_latest_version == True,
+            models.ProjectDesign.is_deleted == False
+        ).order_by(models.ProjectDesign.uploaded_at.desc()).all()
+    
+    def get_versions(self, file_id: str) -> List[models.ProjectDesign]:
+        """Get all versions of a file."""
+        design = self.get_by_id(file_id)
+        if not design:
+            return []
+        
+        root_id = design.parent_id if design.parent_id else design.id
+        
+        return self.db.query(models.ProjectDesign).filter(
+            (models.ProjectDesign.id == root_id) | (models.ProjectDesign.parent_id == root_id)
+        ).order_by(models.ProjectDesign.version.desc()).all()
+    
+    def update(self, design_id: str, update_data: dict) -> models.ProjectDesign:
+        """Update a design."""
+        design = self.get_by_id(design_id)
+        if design:
+            for key, value in update_data.items():
+                if value is not None:
+                    setattr(design, key, value)
+            self.db.commit()
+            self.db.refresh(design)
+        return design
+    
+    def soft_delete(self, design_id: str) -> bool:
+        """Soft delete a design."""
+        design = self.get_by_id(design_id)
+        if design:
+            design.is_deleted = True
+            self.db.commit()
+            return True
+        return False
+    
+    def increment_download_count(self, design_id: str) -> bool:
+        """Increment download count for a design."""
+        design = self.get_by_id(design_id)
+        if design:
+            design.download_count += 1
+            self.db.commit()
+            return True
+        return False
