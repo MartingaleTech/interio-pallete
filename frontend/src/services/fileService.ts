@@ -103,7 +103,17 @@ export const fileService = {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to get download URL')
-    return res.json()
+    const data = await res.json()
+    
+    let url = data.download_url ?? data.file_url
+    if (url && url.startsWith('/')) {
+      url = `${API_URL}${url}`
+    }
+    
+    return {
+      ...data,
+      download_url: url
+    }
   },
 
   async deleteFile(token: string, fileId: string) {
