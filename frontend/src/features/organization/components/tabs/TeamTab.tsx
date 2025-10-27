@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import { TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,86 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useAuth } from '../../../../state/AuthContext'
 import { organizationService } from '../../../../services/organizationService'
 import { TeamMember, OrgTeamMemberFormData } from '../../../../types'
+
+interface TeamMemberFormProps {
+  formData: OrgTeamMemberFormData
+  setFormData: (data: OrgTeamMemberFormData) => void
+  isEditMode: boolean
+  firstInputRef?: React.RefObject<HTMLInputElement>
+}
+
+function TeamMemberForm({ formData, setFormData, isEditMode, firstInputRef }: TeamMemberFormProps) {
+  return (
+    <div className="space-y-4 py-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>First Name</Label>
+          <Input
+            ref={firstInputRef}
+            placeholder="First name"
+            value={formData.first_name}
+            onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+            onKeyDown={(e) => e.stopPropagation()}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Last Name</Label>
+          <Input
+            placeholder="Last name"
+            value={formData.last_name}
+            onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+            onKeyDown={(e) => e.stopPropagation()}
+          />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label>Email</Label>
+        <Input
+          type="email"
+          placeholder="member@example.com"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          onKeyDown={(e) => e.stopPropagation()}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label>Phone Number</Label>
+        <Input
+          type="tel"
+          placeholder="Phone number"
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          onKeyDown={(e) => e.stopPropagation()}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label>Role</Label>
+        <Select 
+          value={formData.role} 
+          onValueChange={(value) => setFormData({ ...formData, role: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select role" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="org_owner">Owner</SelectItem>
+            <SelectItem value="org_member">Member</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label>Password {isEditMode && '(optional)'}</Label>
+        <Input
+          type="password"
+          placeholder={isEditMode ? "Leave empty to keep current password" : "Temporary password"}
+          value={formData.password}
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          onKeyDown={(e) => e.stopPropagation()}
+        />
+      </div>
+    </div>
+  )
+}
 
 interface TeamTabProps {
   teamMembers: TeamMember[]
@@ -31,6 +111,20 @@ export function TeamTab({ teamMembers, onRefresh }: TeamTabProps) {
     password: ''
   })
   const [isLoading, setIsLoading] = useState(false)
+  const addFirstInputRef = useRef<HTMLInputElement>(null)
+  const editFirstInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (showAddDialog && addFirstInputRef.current) {
+      setTimeout(() => addFirstInputRef.current?.focus(), 0)
+    }
+  }, [showAddDialog])
+
+  useEffect(() => {
+    if (showEditDialog && editFirstInputRef.current) {
+      setTimeout(() => editFirstInputRef.current?.focus(), 0)
+    }
+  }, [showEditDialog])
 
   const handleAdd = async () => {
     if (!token) return
@@ -89,71 +183,6 @@ export function TeamTab({ teamMembers, onRefresh }: TeamTabProps) {
     setShowEditDialog(true)
   }
 
-  const TeamMemberForm = () => (
-    <div className="space-y-4 py-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>First Name</Label>
-          <Input
-            placeholder="First name"
-            value={formData.first_name}
-            onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Last Name</Label>
-          <Input
-            placeholder="Last name"
-            value={formData.last_name}
-            onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-          />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label>Email</Label>
-        <Input
-          type="email"
-          placeholder="member@example.com"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label>Phone Number</Label>
-        <Input
-          type="tel"
-          placeholder="Phone number"
-          value={formData.phone}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label>Role</Label>
-        <Select 
-          value={formData.role} 
-          onValueChange={(value) => setFormData({ ...formData, role: value })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select role" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="org_owner">Owner</SelectItem>
-            <SelectItem value="org_member">Member</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="space-y-2">
-        <Label>Password {showEditDialog && '(optional)'}</Label>
-        <Input
-          type="password"
-          placeholder={showEditDialog ? "Leave empty to keep current password" : "Temporary password"}
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-        />
-      </div>
-    </div>
-  )
-
   return (
     <TabsContent value="team" className="space-y-4">
       <div className="flex items-center justify-between">
@@ -168,7 +197,8 @@ export function TeamTab({ teamMembers, onRefresh }: TeamTabProps) {
           <DialogContent 
             className="sm:max-w-lg"
             onOpenAutoFocus={(e) => e.preventDefault()}
-            onPointerDownOutside={(e) => e.preventDefault()}
+            onCloseAutoFocus={(e) => e.preventDefault()}
+            onInteractOutside={(e) => e.preventDefault()}
           >
             <DialogHeader>
               <DialogTitle>Add Team Member</DialogTitle>
@@ -176,7 +206,12 @@ export function TeamTab({ teamMembers, onRefresh }: TeamTabProps) {
                 Add a new team member to your organization
               </DialogDescription>
             </DialogHeader>
-            <TeamMemberForm />
+            <TeamMemberForm 
+              formData={formData}
+              setFormData={setFormData}
+              isEditMode={false}
+              firstInputRef={addFirstInputRef}
+            />
             <div className="flex gap-2">
               <Button onClick={handleAdd} className="flex-1" disabled={isLoading}>
                 {isLoading ? 'Adding...' : 'Add Member'}
@@ -252,7 +287,8 @@ export function TeamTab({ teamMembers, onRefresh }: TeamTabProps) {
         <DialogContent 
           className="sm:max-w-lg"
           onOpenAutoFocus={(e) => e.preventDefault()}
-          onPointerDownOutside={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
             <DialogTitle>Edit Team Member</DialogTitle>
@@ -260,7 +296,12 @@ export function TeamTab({ teamMembers, onRefresh }: TeamTabProps) {
               Update team member information
             </DialogDescription>
           </DialogHeader>
-          <TeamMemberForm />
+          <TeamMemberForm 
+            formData={formData}
+            setFormData={setFormData}
+            isEditMode={true}
+            firstInputRef={editFirstInputRef}
+          />
           <div className="flex gap-2">
             <Button onClick={handleEdit} className="flex-1" disabled={isLoading}>
               {isLoading ? 'Updating...' : 'Update Member'}
