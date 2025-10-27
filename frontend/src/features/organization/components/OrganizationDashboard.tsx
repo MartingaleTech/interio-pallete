@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Home, Users, Calendar, FileText, UserPlus, LifeBuoy } from 'lucide-react'
+import { Home, Users, Calendar, FileText, UserPlus, LifeBuoy, MessageSquare } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { DashboardHeader } from '../../../components/shared/DashboardHeader'
 import { useAuth } from '../../../state/AuthContext'
@@ -12,6 +12,7 @@ import { CalendarTab } from './tabs/CalendarTab'
 import { InvoicesTab } from './tabs/InvoicesTab'
 import { TicketsTab } from './tabs/TicketsTab'
 import { ProjectDashboard } from './ProjectDashboard'
+import { Chat } from '../../chat/components/Chat'
 
 export function OrganizationDashboard() {
   const { user, logout, token } = useAuth()
@@ -80,7 +81,7 @@ export function OrganizationDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-3xl grid-cols-6 gap-1">
+          <TabsList className="grid w-full max-w-4xl grid-cols-7 gap-1">
             <TabsTrigger value="projects" className="text-xs sm:text-sm">
               <Home className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">Projects</span>
@@ -92,6 +93,10 @@ export function OrganizationDashboard() {
             <TabsTrigger value="team" className="text-xs sm:text-sm">
               <UserPlus className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">Team</span>
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="text-xs sm:text-sm">
+              <MessageSquare className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Chat</span>
             </TabsTrigger>
             <TabsTrigger value="tickets" className="text-xs sm:text-sm">
               <LifeBuoy className="w-4 h-4 sm:mr-2" />
@@ -128,6 +133,12 @@ export function OrganizationDashboard() {
               teamMembers={teamMembers}
               onRefresh={fetchTeamMembers}
             />
+          </TabsContent>
+          
+          <TabsContent value="chat">
+            <div className="h-[calc(100vh-250px)]">
+              <Chat />
+            </div>
           </TabsContent>
           
           <TabsContent value="tickets">

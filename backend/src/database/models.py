@@ -425,3 +425,110 @@ class FileAuditLog(Base):
     
     file = relationship("ProjectDesign", back_populates="audit_logs")
     user = relationship("User")
+
+
+class ChatRoom(Base):
+    __tablename__ = "chat_rooms"
+    
+    id = Column(String, primary_key=True)
+    project_id = Column(String, ForeignKey("projects.id"), nullable=False)
+    org_id = Column(String, ForeignKey("organizations.id"), nullable=False)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    created_by = Column(String, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    project = relationship("Project")
+    organization = relationship("Organization")
+    creator = relationship("User", foreign_keys=[created_by])
+    messages = relationship("ChatMessage", back_populates="room", cascade="all, delete-orphan")
+    participants = relationship("ChatRoomParticipant", back_populates="room", cascade="all, delete-orphan")
+
+
+class ChatRoomParticipant(Base):
+    __tablename__ = "chat_room_participants"
+    
+    id = Column(String, primary_key=True)
+    room_id = Column(String, ForeignKey("chat_rooms.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    joined_at = Column(DateTime, default=datetime.utcnow)
+    last_read_at = Column(DateTime, nullable=True)
+    is_admin = Column(Boolean, default=False)
+    
+    room = relationship("ChatRoom", back_populates="participants")
+    user = relationship("User")
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+    
+    id = Column(String, primary_key=True)
+    room_id = Column(String, ForeignKey("chat_rooms.id"), nullable=True)
+    sender_id = Column(String, ForeignKey("users.id"), nullable=False)
+    sender_name = Column(String, nullable=False)
+    recipient_id = Column(String, ForeignKey("users.id"), nullable=True)
+    message = Column(Text, nullable=False)
+    message_type = Column(String, nullable=False, default="text")
+    attachment_url = Column(String, nullable=True)
+    attachment_name = Column(String, nullable=True)
+    attachment_type = Column(String, nullable=True)
+    attachment_size = Column(Integer, nullable=True)
+    is_edited = Column(Boolean, default=False)
+    edited_at = Column(DateTime, nullable=True)
+    is_deleted = Column(Boolean, default=False)
+    deleted_at = Column(DateTime, nullable=True)
+    deleted_for_everyone = Column(Boolean, default=False)
+    parent_message_id = Column(String, ForeignKey("chat_messages.id"), nullable=True)
+    mentions = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    room = relationship("ChatRoom", back_populates="messages")
+    sender = relationship("User", foreign_keys=[sender_id])
+    recipient = relationship("User", foreign_keys=[recipient_id])
+    parent_message = relationship("ChatMessage", remote_side=[id], foreign_keys=[parent_message_id])
+    read_receipts = relationship("MessageReadReceipt", back_populates="message", cascade="all, delete-orphan")
+
+
+class MessageReadReceipt(Base):
+    __tablename__ = "message_read_receipts"
+    
+    id = Column(String, primary_key=True)
+    message_id = Column(String, ForeignKey("chat_messages.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    read_at = Column(DateTime, default=datetime.utcnow)
+    delivered_at = Column(DateTime, nullable=True)
+    
+    message = relationship("ChatMessage", back_populates="read_receipts")
+    user = relationship("User")
+
+
+class TypingStatus(Base):
+    __tablename__ = "typing_status"
+    
+    id = Column(String, primary_key=True)
+    room_id = Column(String, ForeignKey("chat_rooms.id"), nullable=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    recipient_id = Column(String, ForeignKey("users.id"), nullable=True)
+    is_typing = Column(Boolean, default=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    room = relationship("ChatRoom")
+    user = relationship("User", foreign_keys=[user_id])
+    recipient = relationship("User", foreign_keys=[recipient_id])
+
+
+class ChatNotificationSettings(Base):
+    __tablename__ = "chat_notification_settings"
+    
+    id = Column(String, primary_key=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    email_notifications = Column(Boolean, default=True)
+    push_notifications = Column(Boolean, default=True)
+    show_read_receipts = Column(Boolean, default=True)
+    show_typing_indicators = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = relationship("User")

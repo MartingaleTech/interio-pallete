@@ -8,6 +8,7 @@ from src.routes import (
 )
 from src.routes.project_features import notification_router, daily_update_router
 from src.routes.file_management import router as file_management_router
+from src.routes.chat import router as chat_router
 from src.core import initialize_admin_user
 from src.config.storage import storage_config
 import os
@@ -39,6 +40,7 @@ app.include_router(my_tickets_router)
 app.include_router(notification_router)
 app.include_router(daily_update_router)
 app.include_router(file_management_router)
+app.include_router(chat_router)
 
 if storage_config.USE_LOCAL_STORAGE:
     os.makedirs(storage_config.LOCAL_STORAGE_PATH, exist_ok=True)
