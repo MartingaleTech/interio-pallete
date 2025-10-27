@@ -41,3 +41,19 @@ async def require_org_access(user: User = Depends(get_current_user)) -> User:
     if user.role not in [UserRole.ORG_OWNER, UserRole.ORG_MEMBER]:
         raise HTTPException(status_code=403, detail="Organization access required")
     return user
+
+
+async def get_current_user_ws(token: str, db: Session):
+    """Get the current authenticated user from token for WebSocket connections."""
+    token_repo = TokenRepository(db)
+    user_repo = UserRepository(db)
+    
+    user_id = token_repo.get_user_id(token)
+    if not user_id:
+        return None
+    
+    db_user = user_repo.get_by_id(user_id)
+    if not db_user:
+        return None
+    
+    return db_user_to_pydantic(db_user)
