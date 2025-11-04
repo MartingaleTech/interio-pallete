@@ -44,9 +44,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (token && user) {
       chatWebSocketService.connect(token)
-      setIsConnected(true)
 
-      const unsubscribe = chatWebSocketService.onMessage((message) => {
+      const unsubscribeMessages = chatWebSocketService.onMessage((message) => {
         switch (message.type) {
           case 'message_received':
             handleMessageReceived(message.payload)
@@ -72,10 +71,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         }
       })
 
+      const unsubscribeConnection = chatWebSocketService.onConnectionChange((connected) => {
+        console.log('WebSocket connection state changed:', connected)
+        setIsConnected(connected)
+      })
+
       return () => {
-        unsubscribe()
+        unsubscribeMessages()
+        unsubscribeConnection()
         chatWebSocketService.disconnect()
-        setIsConnected(false)
       }
     }
   }, [token, user])
