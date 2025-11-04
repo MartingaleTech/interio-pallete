@@ -35,7 +35,7 @@ export interface AdminNotification {
 
 export const adminService = {
   async getOrganizations(token: string): Promise<Organization[]> {
-    const res = await api.fetchWithAuth('/api/admin/organizations', token)
+    const res = await api.fetchWithAuth('/api/v1/admin/organizations', token)
     
     if (!res.ok) {
       throw new Error('Failed to fetch organizations')
@@ -55,7 +55,7 @@ export const adminService = {
   },
 
   async createOrganization(token: string, data: OrganizationFormData) {
-    const res = await api.fetchWithAuth('/api/admin/organizations', token, {
+    const res = await api.fetchWithAuth('/api/v1/admin/organizations', token, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -113,7 +113,7 @@ export const adminService = {
   },
 
   async getStats(token: string): Promise<AdminStats> {
-    const res = await api.fetchWithAuth('/api/admin/stats', token)
+    const res = await api.fetchWithAuth('/api/v1/admin/stats', token)
     
     if (!res.ok) {
       throw new Error('Failed to fetch stats')
@@ -155,7 +155,7 @@ export const adminService = {
   },
 
   async getAllTickets(token: string): Promise<SupportTicket[]> {
-    const res = await api.fetchWithAuth('/api/admin/support-tickets', token)
+    const res = await api.fetchWithAuth('/api/v1/admin/support-tickets', token)
     
     if (!res.ok) {
       throw new Error('Failed to fetch support tickets')
@@ -212,7 +212,7 @@ export const adminService = {
   },
 
   async markAllNotificationsRead(token: string) {
-    const res = await api.fetchWithAuth('/api/admin/notifications/read-all', token, {
+    const res = await api.fetchWithAuth('/api/v1/admin/notifications/read-all', token, {
       method: 'POST'
     })
     

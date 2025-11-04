@@ -14,13 +14,13 @@ import {
 
 export const organizationService = {
   async getProjects(token: string): Promise<Project[]> {
-    const res = await api.fetchWithAuth('/api/organizations/projects', token)
+    const res = await api.fetchWithAuth('/api/v1/organizations/projects', token)
     if (!res.ok) throw new Error('Failed to fetch projects')
     return res.json()
   },
 
   async createProject(token: string, data: ProjectFormData) {
-    const res = await api.fetchWithAuth('/api/organizations/projects', token, {
+    const res = await api.fetchWithAuth('/api/v1/organizations/projects', token, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -36,13 +36,13 @@ export const organizationService = {
   },
 
   async getClients(token: string): Promise<Client[]> {
-    const res = await api.fetchWithAuth('/api/organizations/clients', token)
+    const res = await api.fetchWithAuth('/api/v1/organizations/clients', token)
     if (!res.ok) throw new Error('Failed to fetch clients')
     return res.json()
   },
 
   async createClient(token: string, data: ClientFormData) {
-    const res = await api.fetchWithAuth('/api/organizations/clients', token, {
+    const res = await api.fetchWithAuth('/api/v1/organizations/clients', token, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -55,7 +55,7 @@ export const organizationService = {
   },
 
   async getTeamMembers(token: string): Promise<TeamMember[]> {
-    const res = await api.fetchWithAuth('/api/organizations/members', token)
+    const res = await api.fetchWithAuth('/api/v1/organizations/members', token)
     if (!res.ok) throw new Error('Failed to fetch team members')
     return res.json()
   },
@@ -74,7 +74,7 @@ export const organizationService = {
   },
 
   async addOrgTeamMember(token: string, data: OrgTeamMemberFormData) {
-    const res = await api.fetchWithAuth('/api/organizations/members', token, {
+    const res = await api.fetchWithAuth('/api/v1/organizations/members', token, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -111,7 +111,7 @@ export const organizationService = {
   },
 
   async createEvent(token: string, data: EventFormData) {
-    const res = await api.fetchWithAuth('/api/organizations/calendar/events', token, {
+    const res = await api.fetchWithAuth('/api/v1/organizations/calendar/events', token, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -132,7 +132,7 @@ export const organizationService = {
       formData.append('file', data.file)
     }
     
-    const res = await api.fetchWithAuth('/api/organizations/designs', token, {
+    const res = await api.fetchWithAuth('/api/v1/organizations/designs', token, {
       method: 'POST',
       body: formData
     })
@@ -144,7 +144,7 @@ export const organizationService = {
   },
 
   async createInvoice(token: string, data: InvoiceFormData) {
-    const res = await api.fetchWithAuth('/api/organizations/invoices', token, {
+    const res = await api.fetchWithAuth('/api/v1/organizations/invoices', token, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

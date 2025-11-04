@@ -2,7 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export const projectService = {
   async getProjectNotifications(token: string, projectId: string) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/notifications`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/notifications`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch notifications')
@@ -10,7 +10,7 @@ export const projectService = {
   },
 
   async getUnreadNotifications(token: string, projectId: string) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/notifications/unread`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/notifications/unread`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch unread notifications')
@@ -18,7 +18,7 @@ export const projectService = {
   },
 
   async markNotificationAsRead(token: string, projectId: string, notificationId: string) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/notifications/${notificationId}/read`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/notifications/${notificationId}/read`, {
       method: 'PATCH',
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -27,7 +27,7 @@ export const projectService = {
   },
 
   async markAllNotificationsAsRead(token: string, projectId: string) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/notifications/mark-all-read`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/notifications/mark-all-read`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -36,7 +36,7 @@ export const projectService = {
   },
 
   async getDailyUpdates(token: string, projectId: string) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/daily-updates`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/daily-updates`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch daily updates')
@@ -44,7 +44,7 @@ export const projectService = {
   },
 
   async createDailyUpdate(token: string, projectId: string, data: any) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/daily-updates`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/daily-updates`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ export const projectService = {
   },
 
   async updateDailyUpdate(token: string, projectId: string, updateId: string, data: any) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/daily-updates/${updateId}`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/daily-updates/${updateId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ export const projectService = {
   },
 
   async deleteDailyUpdate(token: string, projectId: string, updateId: string) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/daily-updates/${updateId}`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/daily-updates/${updateId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -79,7 +79,7 @@ export const projectService = {
   },
 
   async getProjectTickets(token: string, projectId: string) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/tickets`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/tickets`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch tickets')
@@ -87,7 +87,7 @@ export const projectService = {
   },
 
   async createProjectTicket(token: string, projectId: string, data: any) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/tickets`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/tickets`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ export const projectService = {
   },
 
   async getProjectTeam(token: string, projectId: string) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/team`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/team`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch team members')
@@ -108,7 +108,7 @@ export const projectService = {
   },
 
   async addTeamMember(token: string, projectId: string, data: any) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/team`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/team`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -121,7 +121,7 @@ export const projectService = {
   },
 
   async getProjectCalendar(token: string, projectId: string) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/calendar`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/calendar`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch calendar events')
@@ -129,7 +129,7 @@ export const projectService = {
   },
 
   async createCalendarEvent(token: string, projectId: string, data: any) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/calendar`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/calendar`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -142,7 +142,7 @@ export const projectService = {
   },
 
   async getProjectDesigns(token: string, projectId: string) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/designs`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/designs`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch designs')
@@ -150,7 +150,7 @@ export const projectService = {
   },
 
   async createProjectDesign(token: string, projectId: string, data: any) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/designs`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/designs`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -163,7 +163,7 @@ export const projectService = {
   },
 
   async getProjectInvoices(token: string, projectId: string) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/invoices`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/invoices`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch invoices')
@@ -171,7 +171,7 @@ export const projectService = {
   },
 
   async createProjectInvoice(token: string, projectId: string, data: any) {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/invoices`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/invoices`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

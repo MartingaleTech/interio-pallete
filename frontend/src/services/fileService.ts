@@ -63,7 +63,7 @@ export const fileService = {
     formData.append('title', data.title)
     formData.append('description', data.description)
 
-    const res = await fetch(`${API_URL}/api/projects/${data.project_id}/files/upload`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${data.project_id}/files/upload`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`
@@ -75,7 +75,7 @@ export const fileService = {
   },
 
   async listFiles(token: string, projectId: string): Promise<FileMetadata[]> {
-    const res = await fetch(`${API_URL}/api/projects/${projectId}/files`, {
+    const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/files`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch files')
@@ -91,7 +91,7 @@ export const fileService = {
   },
 
   async getFileMetadata(token: string, fileId: string) {
-    const res = await fetch(`${API_URL}/api/files/${fileId}`, {
+    const res = await fetch(`${API_URL}/api/v1/files/${fileId}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch file metadata')
@@ -99,7 +99,7 @@ export const fileService = {
   },
 
   async getDownloadUrl(token: string, fileId: string) {
-    const res = await fetch(`${API_URL}/api/files/${fileId}/download`, {
+    const res = await fetch(`${API_URL}/api/v1/files/${fileId}/download`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to get download URL')
@@ -117,7 +117,7 @@ export const fileService = {
   },
 
   async deleteFile(token: string, fileId: string) {
-    const res = await fetch(`${API_URL}/api/files/${fileId}`, {
+    const res = await fetch(`${API_URL}/api/v1/files/${fileId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -126,7 +126,7 @@ export const fileService = {
   },
 
   async createComment(token: string, fileId: string, comment: string, parentCommentId?: string) {
-    const res = await fetch(`${API_URL}/api/files/${fileId}/comments`, {
+    const res = await fetch(`${API_URL}/api/v1/files/${fileId}/comments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -142,7 +142,7 @@ export const fileService = {
   },
 
   async getComments(token: string, fileId: string) {
-    const res = await fetch(`${API_URL}/api/files/${fileId}/comments`, {
+    const res = await fetch(`${API_URL}/api/v1/files/${fileId}/comments`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch comments')
@@ -150,7 +150,7 @@ export const fileService = {
   },
 
   async getThreadedComments(token: string, fileId: string) {
-    const res = await fetch(`${API_URL}/api/files/${fileId}/comments/threaded`, {
+    const res = await fetch(`${API_URL}/api/v1/files/${fileId}/comments/threaded`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch threaded comments')
@@ -158,7 +158,7 @@ export const fileService = {
   },
 
   async updateComment(token: string, commentId: string, comment: string) {
-    const res = await fetch(`${API_URL}/api/comments/${commentId}`, {
+    const res = await fetch(`${API_URL}/api/v1/comments/${commentId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -171,7 +171,7 @@ export const fileService = {
   },
 
   async deleteComment(token: string, commentId: string) {
-    const res = await fetch(`${API_URL}/api/comments/${commentId}`, {
+    const res = await fetch(`${API_URL}/api/v1/comments/${commentId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -180,7 +180,7 @@ export const fileService = {
   },
 
   async resolveComment(token: string, commentId: string, isResolved: boolean) {
-    const res = await fetch(`${API_URL}/api/comments/${commentId}/resolve`, {
+    const res = await fetch(`${API_URL}/api/v1/comments/${commentId}/resolve`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -196,7 +196,7 @@ export const fileService = {
     const formData = new FormData()
     formData.append('file', file)
 
-    const res = await fetch(`${API_URL}/api/files/${fileId}/versions/upload`, {
+    const res = await fetch(`${API_URL}/api/v1/files/${fileId}/versions/upload`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`
@@ -208,7 +208,7 @@ export const fileService = {
   },
 
   async getVersionHistory(token: string, fileId: string) {
-    const res = await fetch(`${API_URL}/api/files/${fileId}/versions`, {
+    const res = await fetch(`${API_URL}/api/v1/files/${fileId}/versions`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch version history')
@@ -216,7 +216,7 @@ export const fileService = {
   },
 
   async restoreVersion(token: string, versionId: string) {
-    const res = await fetch(`${API_URL}/api/files/versions/${versionId}/restore`, {
+    const res = await fetch(`${API_URL}/api/v1/files/versions/${versionId}/restore`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -225,7 +225,7 @@ export const fileService = {
   },
 
   async setPermission(token: string, fileId: string, userId: string, permissionType: string) {
-    const res = await fetch(`${API_URL}/api/files/${fileId}/permissions`, {
+    const res = await fetch(`${API_URL}/api/v1/files/${fileId}/permissions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -241,7 +241,7 @@ export const fileService = {
   },
 
   async getPermissions(token: string, fileId: string) {
-    const res = await fetch(`${API_URL}/api/files/${fileId}/permissions`, {
+    const res = await fetch(`${API_URL}/api/v1/files/${fileId}/permissions`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch permissions')
@@ -249,7 +249,7 @@ export const fileService = {
   },
 
   async getAuditLogs(token: string, fileId: string) {
-    const res = await fetch(`${API_URL}/api/files/${fileId}/audit-logs`, {
+    const res = await fetch(`${API_URL}/api/v1/files/${fileId}/audit-logs`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch audit logs')
