@@ -25,6 +25,13 @@ export function MessageList({ onEditMessage }: MessageListProps) {
     }
   }
 
+  const formatTime = (value: any) => {
+    if (!value) return ''
+    const dateStr = typeof value === 'string' ? value.replace(' ', 'T') : value
+    const d = new Date(dateStr)
+    return isNaN(d.getTime()) ? '' : d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+  }
+
   const getReadStatus = (message: ChatMessage) => {
     if (!message.read_receipts || message.read_receipts.length === 0) {
       return 'sent'
@@ -103,7 +110,7 @@ export function MessageList({ onEditMessage }: MessageListProps) {
                   <div className="flex items-center justify-between mt-2 gap-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs opacity-70">
-                        {new Date(message.created_at).toLocaleTimeString()}
+                        {formatTime(message.created_at)}
                       </span>
                       {message.is_edited && (
                         <span className="text-xs opacity-70">(edited)</span>

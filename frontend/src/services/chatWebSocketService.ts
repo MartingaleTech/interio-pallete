@@ -8,6 +8,7 @@ type WSMessageType =
   | 'mark_read'
   | 'join_room'
   | 'leave_room'
+  | 'new_message'
   | 'message_received'
   | 'message_edited'
   | 'message_deleted'

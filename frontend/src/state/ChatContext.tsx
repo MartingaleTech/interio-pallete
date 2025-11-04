@@ -98,8 +98,21 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, [token])
 
   const handleMessageReceived = useCallback((payload: any) => {
-    const newMessage: ChatMessage = payload.message ?? payload
-    console.log('Processing new message:', newMessage)
+    const rawMessage: ChatMessage = payload.message ?? payload
+    console.log('Processing new message:', rawMessage)
+    
+    const messageId = rawMessage.id
+    if (!messageId) {
+      console.warn('Message missing id, skipping:', rawMessage)
+      return
+    }
+    
+    const createdAt = rawMessage.created_at || new Date().toISOString()
+    const newMessage: ChatMessage = {
+      ...rawMessage,
+      id: messageId,
+      created_at: createdAt
+    }
     
     setCurrentMessages(prev => {
       const exists = prev.some(m => m.id === newMessage.id)

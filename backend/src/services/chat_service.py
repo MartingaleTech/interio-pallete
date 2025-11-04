@@ -19,7 +19,7 @@ from src.repositories.chat_repository import (
 )
 from src.repositories.user_repository import UserRepository
 from src.repositories.project_repository import ProjectRepository
-from src.database.models import User, ChatRoom, ChatMessage
+from src.database.models import User, ChatRoom, ChatMessage, MessageReadReceipt
 from src.models.chat import (
     CreateChatRoomRequest,
     SendMessageRequest,
@@ -424,7 +424,7 @@ class ChatService:
         """Get list of direct message conversations for user"""
         all_messages = db.query(ChatMessage).filter(
             and_(
-                ChatMessage.room_id == None,
+                ChatMessage.room_id.is_(None),
                 or_(
                     ChatMessage.sender_id == user.id,
                     ChatMessage.recipient_id == user.id
@@ -450,7 +450,7 @@ class ChatService:
         for partner_id in conversations:
             unread = db.query(ChatMessage).filter(
                 and_(
-                    ChatMessage.room_id == None,
+                    ChatMessage.room_id.is_(None),
                     ChatMessage.sender_id == partner_id,
                     ChatMessage.recipient_id == user.id,
                     ChatMessage.is_deleted == False
@@ -461,7 +461,7 @@ class ChatService:
                     MessageReadReceipt.message_id == ChatMessage.id,
                     MessageReadReceipt.user_id == user.id
                 )
-            ).filter(MessageReadReceipt.read_at == None).count()
+            ).filter(MessageReadReceipt.read_at.is_(None)).count()
             
             conversations[partner_id]["unread_count"] = unread
         
