@@ -61,11 +61,12 @@ class ChatWebSocketService {
       this.ws.onmessage = (event) => {
         try {
           const incoming = JSON.parse(event.data)
+          console.log('[WS] Raw incoming:', incoming)
           const normalized: WSMessage = {
             type: incoming.type,
             payload: incoming.payload ?? incoming.data
           }
-          console.log('Received WebSocket message:', normalized)
+          console.log('[WS] Normalized:', normalized)
           this.messageHandlers.forEach(handler => handler(normalized))
         } catch (error) {
           console.error('Failed to parse WebSocket message:', error)

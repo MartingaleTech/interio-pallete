@@ -99,11 +99,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const handleMessageReceived = useCallback((payload: any) => {
     const rawMessage: ChatMessage = payload.message ?? payload
-    console.log('Processing new message:', rawMessage)
+    console.log('[ChatContext] Processing new message:', rawMessage)
     
     const messageId = rawMessage.id
     if (!messageId) {
-      console.warn('Message missing id, skipping:', rawMessage)
+      console.warn('[ChatContext] Message missing id, skipping:', rawMessage)
       return
     }
     
@@ -114,13 +114,35 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       created_at: createdAt
     }
     
-    setCurrentMessages(prev => {
-      const exists = prev.some(m => m.id === newMessage.id)
-      if (exists) return prev
-      return [...prev, newMessage]
-    })
-
-    if (newMessage.room_id) {
+    console.log('[ChatContext] Normalized message:', { id: messageId, created_at: createdAt, sender_id: newMessage.sender_id, recipient_id: newMessage.recipient_id })
+    
+    const isDM = !newMessage.room_id
+    const isActiveDM = isDM && currentDirectUserId && (
+      (newMessage.recipient_id === user?.id && currentDirectUserId === newMessage.sender_id) ||
+      (newMessage.sender_id === user?.id && currentDirectUserId === newMessage.recipient_id)
+    )
+    
+    console.log('[ChatContext] Message type:', { isDM, isActiveDM, currentDirectUserId, room_id: newMessage.room_id })
+    
+    if (isDM && isActiveDM) {
+      setCurrentMessages(prev => {
+        console.log('[ChatContext] Before append - currentMessages.length:', prev.length)
+        const exists = prev.some(m => m.id === newMessage.id)
+        if (exists) {
+          console.log('[ChatContext] Message already exists, skipping')
+          return prev
+        }
+        const updated = [...prev, newMessage]
+        console.log('[ChatContext] After append - currentMessages.length:', updated.length)
+        return updated
+      })
+    } else if (newMessage.room_id) {
+      setCurrentMessages(prev => {
+        const exists = prev.some(m => m.id === newMessage.id)
+        if (exists) return prev
+        return [...prev, newMessage]
+      })
+      
       setRooms(prev => prev.map(room => {
         if (room.id === newMessage.room_id) {
           return {
@@ -131,10 +153,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         }
         return room
       }))
-    } else {
+    }
+    
+    if (isDM) {
+      console.log('[ChatContext] Refreshing direct conversations')
       loadDirectConversations()
     }
-  }, [user, loadDirectConversations])
+  }, [user, currentDirectUserId, loadDirectConversations])
 
   const handleMessageEdited = useCallback((payload: any) => {
     const editedMessage: ChatMessage = payload.message
@@ -262,10 +287,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       chatWebSocketService.connect(token)
 
       const unsubscribeMessages = chatWebSocketService.onMessage((message) => {
-        console.log('Received WebSocket event:', message.type, message.payload)
+        console.log('[ChatContext] Received WebSocket event:', message.type, message.payload)
         switch (message.type) {
           case 'new_message':
+            console.log('[ChatContext] Handling new_message event')
+            handleMessageReceived(message.payload)
+            break
           case 'message_received':
+            console.log('[ChatContext] Handling message_received event')
             handleMessageReceived(message.payload)
             break
           case 'message_edited':
