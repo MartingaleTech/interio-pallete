@@ -50,7 +50,8 @@ class ChatService:
         if not project:
             raise ValueError("Project not found")
         
-        if project.org_id != user.org_id and user.role.value != "admin":
+        role_value = getattr(user.role, 'value', user.role)
+        if project.org_id != user.org_id and role_value != "admin":
             raise ValueError("Access denied to this project")
         
         existing_room = self.room_repo.get_by_project_id(db, request.project_id)
@@ -79,7 +80,8 @@ class ChatService:
             return None
         
         if not self.participant_repo.is_participant(db, room_id, user.id):
-            if user.role.value != "admin":
+            role_value = getattr(user.role, 'value', user.role)
+            if role_value != "admin":
                 raise ValueError("Access denied to this chat room")
         
         return room
@@ -117,7 +119,8 @@ class ChatService:
         """Remove a participant from a chat room"""
         participant = self.participant_repo.get_participant(db, room_id, user.id)
         if not participant or not participant.is_admin:
-            if user.role.value != "admin":
+            role_value = getattr(user.role, 'value', user.role)
+            if role_value != "admin":
                 raise ValueError("Only room admins can remove participants")
         
         return self.participant_repo.remove_participant(db, room_id, user_id)
@@ -125,7 +128,8 @@ class ChatService:
     def get_room_participants(self, db: Session, user: User, room_id: str) -> List[Dict[str, Any]]:
         """Get all participants in a chat room"""
         if not self.participant_repo.is_participant(db, room_id, user.id):
-            if user.role.value != "admin":
+            role_value = getattr(user.role, 'value', user.role)
+            if role_value != "admin":
                 raise ValueError("Access denied to this chat room")
         
         participants = self.participant_repo.get_participants(db, room_id)
@@ -192,7 +196,8 @@ class ChatService:
         if not recipient:
             raise ValueError("Recipient not found")
         
-        if user.org_id != recipient.org_id and user.role.value != "admin":
+        role_value = getattr(user.role, 'value', user.role)
+        if user.org_id != recipient.org_id and role_value != "admin":
             raise ValueError("Cannot send direct message to user in different organization")
         
         message_data = {
@@ -245,7 +250,8 @@ class ChatService:
             if message.room_id:
                 participant = self.participant_repo.get_participant(db, message.room_id, user.id)
                 if not participant or not participant.is_admin:
-                    if user.role.value != "admin":
+                    role_value = getattr(user.role, 'value', user.role)
+                    if role_value != "admin":
                         raise ValueError("You can only delete your own messages")
             else:
                 raise ValueError("You can only delete your own messages")
@@ -263,7 +269,8 @@ class ChatService:
     ) -> Dict[str, Any]:
         """Get messages in a chat room with pagination"""
         if not self.participant_repo.is_participant(db, room_id, user.id):
-            if user.role.value != "admin":
+            role_value = getattr(user.role, 'value', user.role)
+            if role_value != "admin":
                 raise ValueError("Access denied to this chat room")
         
         messages = self.message_repo.get_room_messages(db, room_id, limit, offset, before_timestamp)
@@ -320,7 +327,8 @@ class ChatService:
         """Search messages by keyword"""
         if request.room_id:
             if not self.participant_repo.is_participant(db, request.room_id, user.id):
-                if user.role.value != "admin":
+                role_value = getattr(user.role, 'value', user.role)
+                if role_value != "admin":
                     raise ValueError("Access denied to this chat room")
         
         return self.message_repo.search_messages(
