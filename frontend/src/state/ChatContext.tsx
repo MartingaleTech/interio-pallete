@@ -98,15 +98,23 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, [token])
 
   const handleMessageReceived = useCallback((payload: any) => {
-    const rawMessage: ChatMessage = payload.message ?? payload
-    console.log('[ChatContext] Processing new message:', rawMessage)
+    console.log('[ChatContext] Raw payload:', payload, 'type:', typeof payload)
     
-    const messageId = rawMessage.id
-    if (!messageId) {
-      console.warn('[ChatContext] Message missing id, skipping:', rawMessage)
+    const getRawMessage = (p: any) => {
+      if (p && typeof p === 'object' && (p.id || p.message_id)) return p
+      if (p && typeof p.message === 'object' && (p.message.id || p.message.message_id)) return p.message
+      return null
+    }
+    
+    const rawMessage = getRawMessage(payload)
+    if (!rawMessage) {
+      console.warn('[ChatContext] Message missing id, skipping. Payload:', payload)
       return
     }
     
+    console.log('[ChatContext] Processing new message:', rawMessage)
+    
+    const messageId = rawMessage.id ?? rawMessage.message_id
     const createdAt = rawMessage.created_at || new Date().toISOString()
     const newMessage: ChatMessage = {
       ...rawMessage,

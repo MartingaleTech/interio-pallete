@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Edit, Trash2, Eye } from 'lucide-react'
+import { Plus, Trash2, Eye } from 'lucide-react'
 import { adminService } from '../../../services/adminService'
 import { Organization } from '../../../types'
 import { CreateOrganizationForm } from './CreateOrganizationForm'

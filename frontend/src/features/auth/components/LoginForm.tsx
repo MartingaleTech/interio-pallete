@@ -11,7 +11,7 @@ import { useAuth } from '../../../state/AuthContext'
 export function LoginForm() {
   const { login } = useAuth()
   const navigate = useNavigate()
-  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email')
+  const [loginMethod] = useState<'email' | 'phone'>('email')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [phone, setPhone] = useState('')

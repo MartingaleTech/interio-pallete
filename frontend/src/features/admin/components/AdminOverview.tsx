@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Building2, TrendingUp, FolderOpen, DollarSign, AlertCircle } from 'lucide-react'
+import { Building2, FolderOpen, DollarSign, AlertCircle } from 'lucide-react'
 import { adminService, AdminStats } from '../../../services/adminService'
 import { Organization } from '../../../types'
-import { OrganizationCard } from './OrganizationCard'
 
 interface AdminOverviewProps {
   token: string

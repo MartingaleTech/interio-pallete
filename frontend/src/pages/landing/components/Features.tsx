@@ -1,4 +1,4 @@
-import { Briefcase, Users, Calendar, FileText, Image, CreditCard, Shield, Zap } from 'lucide-react'
+import { Briefcase, Users, Calendar, FileText, Image, Shield, Zap } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 
 const features = [
