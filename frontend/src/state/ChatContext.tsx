@@ -41,50 +41,61 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [typingUsers, setTypingUsers] = useState<TypingStatus[]>([])
   const [isConnected, setIsConnected] = useState(false)
 
-  useEffect(() => {
-    if (token && user) {
-      chatWebSocketService.connect(token)
+  const loadRooms = useCallback(async () => {
+    if (!token) return
+    try {
+      const fetchedRooms = await chatService.getChatRooms(token)
+      setRooms(fetchedRooms)
+    } catch (error) {
+      console.error('Failed to load chat rooms:', error)
+    }
+  }, [token])
 
-      const unsubscribeMessages = chatWebSocketService.onMessage((message) => {
-        console.log('Received WebSocket event:', message.type, message.payload)
-        switch (message.type) {
-          case 'new_message':
-          case 'message_received':
-            handleMessageReceived(message.payload)
-            break
-          case 'message_edited':
-            handleMessageEdited(message.payload)
-            break
-          case 'message_deleted':
-            handleMessageDeleted(message.payload)
-            break
-          case 'typing_status':
-            handleTypingStatus(message.payload)
-            break
-          case 'message_read':
-            handleMessageRead(message.payload)
-            break
-          case 'message_delivered':
-            handleMessageDelivered(message.payload)
-            break
-          case 'error':
-            console.error('WebSocket error:', message.payload)
-            break
-        }
-      })
-
-      const unsubscribeConnection = chatWebSocketService.onConnectionChange((connected) => {
-        console.log('WebSocket connection state changed:', connected)
-        setIsConnected(connected)
-      })
-
-      return () => {
-        unsubscribeMessages()
-        unsubscribeConnection()
-        chatWebSocketService.disconnect()
+  const loadRoomMessages = useCallback(async (roomId: string) => {
+    if (!token) return
+    try {
+      const { messages } = await chatService.getRoomMessages(token, roomId)
+      setCurrentMessages(messages)
+      
+      const messageIds = messages
+        .filter(m => m.sender_id !== user?.id && !m.read_receipts?.some(r => r.user_id === user?.id && r.read_at))
+        .map(m => m.id)
+      
+      if (messageIds.length > 0) {
+        chatWebSocketService.markAsRead(messageIds, roomId)
       }
+    } catch (error) {
+      console.error('Failed to load room messages:', error)
     }
   }, [token, user])
+
+  const loadDirectMessages = useCallback(async (userId: string) => {
+    if (!token) return
+    try {
+      const { messages } = await chatService.getDirectMessages(token, userId)
+      setCurrentMessages(messages)
+      
+      const messageIds = messages
+        .filter(m => m.sender_id !== user?.id && !m.read_receipts?.some(r => r.user_id === user?.id && r.read_at))
+        .map(m => m.id)
+      
+      if (messageIds.length > 0) {
+        chatWebSocketService.markAsRead(messageIds)
+      }
+    } catch (error) {
+      console.error('Failed to load direct messages:', error)
+    }
+  }, [token, user])
+
+  const loadDirectConversations = useCallback(async () => {
+    if (!token) return
+    try {
+      const conversations = await chatService.getDirectMessageConversations(token)
+      setDirectConversations(conversations)
+    } catch (error) {
+      console.error('Failed to load direct conversations:', error)
+    }
+  }, [token])
 
   const handleMessageReceived = useCallback((payload: any) => {
     const newMessage: ChatMessage = payload.message ?? payload
@@ -197,62 +208,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }))
   }, [])
 
-  const loadRooms = useCallback(async () => {
-    if (!token) return
-    try {
-      const fetchedRooms = await chatService.getChatRooms(token)
-      setRooms(fetchedRooms)
-    } catch (error) {
-      console.error('Failed to load chat rooms:', error)
-    }
-  }, [token])
-
-  const loadRoomMessages = useCallback(async (roomId: string) => {
-    if (!token) return
-    try {
-      const { messages } = await chatService.getRoomMessages(token, roomId)
-      setCurrentMessages(messages)
-      
-      const messageIds = messages
-        .filter(m => m.sender_id !== user?.id && !m.read_receipts?.some(r => r.user_id === user?.id && r.read_at))
-        .map(m => m.id)
-      
-      if (messageIds.length > 0) {
-        markAsRead(messageIds, roomId)
-      }
-    } catch (error) {
-      console.error('Failed to load room messages:', error)
-    }
-  }, [token, user])
-
-  const loadDirectMessages = useCallback(async (userId: string) => {
-    if (!token) return
-    try {
-      const { messages } = await chatService.getDirectMessages(token, userId)
-      setCurrentMessages(messages)
-      
-      const messageIds = messages
-        .filter(m => m.sender_id !== user?.id && !m.read_receipts?.some(r => r.user_id === user?.id && r.read_at))
-        .map(m => m.id)
-      
-      if (messageIds.length > 0) {
-        markAsRead(messageIds)
-      }
-    } catch (error) {
-      console.error('Failed to load direct messages:', error)
-    }
-  }, [token, user])
-
-  const loadDirectConversations = useCallback(async () => {
-    if (!token) return
-    try {
-      const conversations = await chatService.getDirectMessageConversations(token)
-      setDirectConversations(conversations)
-    } catch (error) {
-      console.error('Failed to load direct conversations:', error)
-    }
-  }, [token])
-
   const sendMessage = useCallback((roomId: string, message: string) => {
     chatWebSocketService.sendMessage(roomId, message)
   }, [])
@@ -288,6 +243,51 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const leaveRoom = useCallback((roomId: string) => {
     chatWebSocketService.leaveRoom(roomId)
   }, [])
+
+  useEffect(() => {
+    if (token && user) {
+      chatWebSocketService.connect(token)
+
+      const unsubscribeMessages = chatWebSocketService.onMessage((message) => {
+        console.log('Received WebSocket event:', message.type, message.payload)
+        switch (message.type) {
+          case 'new_message':
+          case 'message_received':
+            handleMessageReceived(message.payload)
+            break
+          case 'message_edited':
+            handleMessageEdited(message.payload)
+            break
+          case 'message_deleted':
+            handleMessageDeleted(message.payload)
+            break
+          case 'typing_status':
+            handleTypingStatus(message.payload)
+            break
+          case 'message_read':
+            handleMessageRead(message.payload)
+            break
+          case 'message_delivered':
+            handleMessageDelivered(message.payload)
+            break
+          case 'error':
+            console.error('WebSocket error:', message.payload)
+            break
+        }
+      })
+
+      const unsubscribeConnection = chatWebSocketService.onConnectionChange((connected) => {
+        console.log('WebSocket connection state changed:', connected)
+        setIsConnected(connected)
+      })
+
+      return () => {
+        unsubscribeMessages()
+        unsubscribeConnection()
+        chatWebSocketService.disconnect()
+      }
+    }
+  }, [token, user, handleMessageReceived, handleMessageEdited, handleMessageDeleted, handleTypingStatus, handleMessageRead, handleMessageDelivered])
 
   useEffect(() => {
     if (currentRoom) {
