@@ -60,7 +60,10 @@ export function Chat() {
               <ChatRoomList onRoomSelect={handleRoomSelect} />
             </TabsContent>
             <TabsContent value="direct" className="flex-1 overflow-hidden m-0">
-              <DirectMessages onConversationSelect={handleConversationSelect} />
+              <DirectMessages 
+                onConversationSelect={handleConversationSelect}
+                currentDirectUserId={currentDirectUserId}
+              />
             </TabsContent>
           </Tabs>
         </div>

@@ -112,6 +112,20 @@ export const chatService = {
     return response.json()
   },
 
+  async getOrgMembers(token: string): Promise<Array<{ id: string, name: string, email: string, role: string }>> {
+    const response = await fetch(`${API_URL}/api/chat/org/members`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch org members')
+    }
+
+    return response.json()
+  },
+
   async searchMessages(token: string, query: string, roomId?: string, limit: number = 50): Promise<ChatMessage[]> {
     const response = await fetch(`${API_URL}/api/chat/search`, {
       method: 'POST',

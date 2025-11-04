@@ -1,55 +1,85 @@
-import { useEffect } from 'react'
-import { useChat } from '../../../state/ChatContext'
+import { useEffect, useState } from 'react'
+import { useAuth } from '../../../state/AuthContext'
+import { chatService } from '../../../services/chatService'
 import { Card } from '../../../components/ui/card'
 import { Badge } from '../../../components/ui/badge'
 import { ScrollArea } from '../../../components/ui/scroll-area'
+import { User } from 'lucide-react'
 
 interface DirectMessagesProps {
   onConversationSelect: (userId: string, userName: string) => void
+  currentDirectUserId: string | null
 }
 
-export function DirectMessages({ onConversationSelect }: DirectMessagesProps) {
-  const { directConversations, currentDirectUserId, loadDirectConversations } = useChat()
+interface OrgMember {
+  id: string
+  name: string
+  email: string
+  role: string
+}
+
+export function DirectMessages({ onConversationSelect, currentDirectUserId }: DirectMessagesProps) {
+  const { token } = useAuth()
+  const [orgMembers, setOrgMembers] = useState<OrgMember[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadDirectConversations()
-  }, [loadDirectConversations])
+    loadOrgMembers()
+  }, [token])
+
+  const loadOrgMembers = async () => {
+    if (!token) return
+    try {
+      setLoading(true)
+      const members = await chatService.getOrgMembers(token)
+      setOrgMembers(members)
+    } catch (error) {
+      console.error('Failed to load org members:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b">
         <h2 className="text-lg font-semibold">Direct Messages</h2>
+        <p className="text-xs text-muted-foreground mt-1">
+          Message anyone in your organization
+        </p>
       </div>
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-2">
-          {directConversations.length === 0 ? (
+          {loading ? (
             <div className="text-center text-muted-foreground py-8">
-              No direct messages
+              Loading members...
+            </div>
+          ) : orgMembers.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">
+              No other members in your organization
             </div>
           ) : (
-            directConversations.map((conversation) => (
+            orgMembers.map((member) => (
               <Card
-                key={conversation.user_id}
+                key={member.id}
                 className={`p-3 cursor-pointer hover:bg-accent transition-colors ${
-                  currentDirectUserId === conversation.user_id ? 'bg-accent' : ''
+                  currentDirectUserId === member.id ? 'bg-accent' : ''
                 }`}
-                onClick={() => onConversationSelect(conversation.user_id, conversation.user_name)}
+                onClick={() => onConversationSelect(member.id, member.name)}
               >
-                <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-medium truncate">{conversation.user_name}</h3>
-                      {conversation.unread_count > 0 && (
-                        <Badge variant="destructive" className="text-xs">
-                          {conversation.unread_count}
-                        </Badge>
-                      )}
+                      <h3 className="font-medium truncate">{member.name}</h3>
+                      <Badge variant="outline" className="text-xs">
+                        {member.role}
+                      </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground truncate mt-1">
-                      {conversation.last_message.message}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(conversation.last_message.created_at).toLocaleString()}
+                      {member.email}
                     </p>
                   </div>
                 </div>

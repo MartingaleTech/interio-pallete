@@ -496,6 +496,32 @@ def get_direct_conversations(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+@router.get("/api/chat/org/members")
+def get_org_members(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    """Get all members in the user's organization for direct messaging"""
+    try:
+        from src.repositories.user_repository import UserRepository
+        user_repo = UserRepository(db)
+        
+        members = db.query(User).filter(
+            User.org_id == user.org_id,
+            User.id != user.id
+        ).all()
+        
+        return [{
+            "id": member.id,
+            "name": member.name,
+            "email": member.email,
+            "role": member.role.value if hasattr(member.role, 'value') else member.role
+        } for member in members]
+    except Exception as e:
+        logger.error(f"Error getting org members: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 @router.post("/api/chat/search")
 def search_messages(
     request: SearchMessagesRequest,
