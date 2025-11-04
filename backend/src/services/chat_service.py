@@ -3,6 +3,7 @@ Chat Service Layer
 Handles business logic for chat operations
 """
 from sqlalchemy.orm import Session
+from sqlalchemy import and_, or_, desc
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 import uuid
