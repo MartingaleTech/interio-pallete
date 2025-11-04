@@ -49,7 +49,7 @@ export function Chat() {
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex min-h-0">
         <div className="w-80 border-r">
           <Tabs defaultValue="rooms" className="h-full flex flex-col">
             <TabsList className="w-full">
@@ -68,7 +68,7 @@ export function Chat() {
           </Tabs>
         </div>
 
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           {currentRoom || currentDirectUserId ? (
             <>
               <div className="p-4 border-b">
