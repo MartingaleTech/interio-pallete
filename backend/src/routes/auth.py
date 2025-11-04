@@ -6,7 +6,7 @@ from src.services import auth_service_new
 from src.dependencies.auth_new import get_current_user, security
 from src.config.database import get_db
 
-router = APIRouter(prefix="/api/auth", tags=["auth"])
+router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
 @router.post("/login")

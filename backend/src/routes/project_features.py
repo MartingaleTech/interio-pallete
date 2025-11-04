@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from typing import List
 from sqlalchemy.orm import Session
 from src.models import User
@@ -7,8 +7,9 @@ from src.models.daily_update import ProjectDailyUpdate, ProjectDailyUpdateCreate
 from src.services import notification_service, daily_update_service
 from src.dependencies.auth_new import require_org_access, get_current_user
 from src.config.database import get_db
+from src.utils.pagination import paginate_query, create_paginated_response
 
-notification_router = APIRouter(prefix="/api/projects", tags=["project-notifications"])
+notification_router = APIRouter(prefix="/api/v1/projects", tags=["project-notifications"])
 
 
 @notification_router.post("/{project_id}/notifications", response_model=ProjectNotification)
@@ -22,24 +23,37 @@ async def create_project_notification(
     return notification_service.create_project_notification(db, user, project_id, notification)
 
 
-@notification_router.get("/{project_id}/notifications", response_model=List[ProjectNotification])
+@notification_router.get("/{project_id}/notifications")
 async def get_project_notifications(
     project_id: str,
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    """Get all notifications for a project."""
-    return notification_service.get_project_notifications(db, user, project_id)
+    """Get all notifications for a project with pagination."""
+    from src.database.models import ProjectNotification as ProjectNotificationModel
+    query = db.query(ProjectNotificationModel).filter(ProjectNotificationModel.project_id == project_id)
+    items, total = paginate_query(query, page, page_size)
+    return create_paginated_response(items, total, page, page_size)
 
 
-@notification_router.get("/{project_id}/notifications/unread", response_model=List[ProjectNotification])
+@notification_router.get("/{project_id}/notifications/unread")
 async def get_unread_project_notifications(
     project_id: str,
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    """Get all unread notifications for a project."""
-    return notification_service.get_unread_project_notifications(db, user, project_id)
+    """Get all unread notifications for a project with pagination."""
+    from src.database.models import ProjectNotification as ProjectNotificationModel
+    query = db.query(ProjectNotificationModel).filter(
+        ProjectNotificationModel.project_id == project_id,
+        ProjectNotificationModel.is_read == False
+    )
+    items, total = paginate_query(query, page, page_size)
+    return create_paginated_response(items, total, page, page_size)
 
 
 @notification_router.patch("/{project_id}/notifications/{notification_id}/read", response_model=ProjectNotification)
@@ -74,7 +88,7 @@ async def delete_project_notification(
     return notification_service.delete_project_notification(db, user, notification_id)
 
 
-daily_update_router = APIRouter(prefix="/api/projects", tags=["project-daily-updates"])
+daily_update_router = APIRouter(prefix="/api/v1/projects", tags=["project-daily-updates"])
 
 
 @daily_update_router.post("/{project_id}/daily-updates", response_model=ProjectDailyUpdate)
@@ -88,14 +102,19 @@ async def create_project_daily_update(
     return daily_update_service.create_project_daily_update(db, user, project_id, update)
 
 
-@daily_update_router.get("/{project_id}/daily-updates", response_model=List[ProjectDailyUpdate])
+@daily_update_router.get("/{project_id}/daily-updates")
 async def get_project_daily_updates(
     project_id: str,
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    """Get all daily updates for a project."""
-    return daily_update_service.get_project_daily_updates(db, user, project_id)
+    """Get all daily updates for a project with pagination."""
+    from src.database.models import ProjectDailyUpdate as ProjectDailyUpdateModel
+    query = db.query(ProjectDailyUpdateModel).filter(ProjectDailyUpdateModel.project_id == project_id)
+    items, total = paginate_query(query, page, page_size)
+    return create_paginated_response(items, total, page, page_size)
 
 
 @daily_update_router.get("/{project_id}/daily-updates/{update_id}", response_model=ProjectDailyUpdate)

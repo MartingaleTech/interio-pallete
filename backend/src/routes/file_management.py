@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -21,11 +21,12 @@ from src.models.file_management import (
     FileListResponse,
     FileDownloadResponse
 )
+from src.utils.pagination import paginate_query, create_paginated_response
 
 router = APIRouter()
 
 
-@router.post("/api/projects/{project_id}/files/upload", response_model=FileUploadResponse)
+@router.post("/api/v1/projects/{project_id}/files/upload", response_model=FileUploadResponse)
 async def upload_file(
     project_id: str,
     file: UploadFile = File(...),
@@ -76,7 +77,7 @@ async def upload_file(
     )
 
 
-@router.post("/api/files/{file_id}/versions/upload", response_model=FileUploadResponse)
+@router.post("/api/v1/files/{file_id}/versions/upload", response_model=FileUploadResponse)
 async def upload_new_version(
     file_id: str,
     file: UploadFile = File(...),
@@ -113,7 +114,7 @@ async def upload_new_version(
     )
 
 
-@router.get("/api/files/{file_id}/download", response_model=FileDownloadResponse)
+@router.get("/api/v1/files/{file_id}/download", response_model=FileDownloadResponse)
 async def download_file(
     file_id: str,
     db: Session = Depends(get_db),
@@ -139,7 +140,7 @@ async def download_file(
     )
 
 
-@router.delete("/api/files/{file_id}")
+@router.delete("/api/v1/files/{file_id}")
 async def delete_file(
     file_id: str,
     db: Session = Depends(get_db),
@@ -160,7 +161,7 @@ async def delete_file(
     return {"message": "File deleted successfully"}
 
 
-@router.get("/api/files/{file_id}", response_model=FileMetadata)
+@router.get("/api/v1/files/{file_id}", response_model=FileMetadata)
 async def get_file_metadata(
     file_id: str,
     db: Session = Depends(get_db),
@@ -195,7 +196,7 @@ async def get_file_metadata(
     )
 
 
-@router.get("/api/projects/{project_id}/files", response_model=FileListResponse)
+@router.get("/api/v1/projects/{project_id}/files", response_model=FileListResponse)
 async def list_project_files(
     project_id: str,
     latest_only: bool = True,
@@ -239,7 +240,7 @@ async def list_project_files(
     return FileListResponse(files=files, total=len(files))
 
 
-@router.get("/api/files/{file_id}/versions", response_model=List[FileVersionResponse])
+@router.get("/api/v1/files/{file_id}/versions", response_model=List[FileVersionResponse])
 async def get_file_versions(
     file_id: str,
     db: Session = Depends(get_db),
@@ -264,7 +265,7 @@ async def get_file_versions(
     ]
 
 
-@router.post("/api/files/versions/{version_id}/restore", response_model=FileUploadResponse)
+@router.post("/api/v1/files/versions/{version_id}/restore", response_model=FileUploadResponse)
 async def restore_file_version(
     version_id: str,
     db: Session = Depends(get_db),
@@ -299,7 +300,7 @@ async def restore_file_version(
     )
 
 
-@router.get("/api/files/{file_id}/audit-logs", response_model=List[FileAuditLogResponse])
+@router.get("/api/v1/files/{file_id}/audit-logs", response_model=List[FileAuditLogResponse])
 async def get_file_audit_logs(
     file_id: str,
     db: Session = Depends(get_db),
@@ -324,7 +325,7 @@ async def get_file_audit_logs(
     ]
 
 
-@router.post("/api/files/{file_id}/permissions", response_model=FilePermissionResponse)
+@router.post("/api/v1/files/{file_id}/permissions", response_model=FilePermissionResponse)
 async def set_file_permissions(
     file_id: str,
     permission: FilePermissionCreate,
@@ -357,7 +358,7 @@ async def set_file_permissions(
     )
 
 
-@router.post("/api/files/{file_id}/comments", response_model=FileCommentResponse)
+@router.post("/api/v1/files/{file_id}/comments", response_model=FileCommentResponse)
 async def create_file_comment(
     file_id: str,
     comment_data: FileCommentCreate,
@@ -412,7 +413,7 @@ async def create_file_comment(
     )
 
 
-@router.get("/api/files/{file_id}/comments", response_model=List[FileCommentResponse])
+@router.get("/api/v1/files/{file_id}/comments", response_model=List[FileCommentResponse])
 async def list_file_comments(
     file_id: str,
     include_resolved: bool = True,
@@ -451,7 +452,7 @@ async def list_file_comments(
     ]
 
 
-@router.get("/api/files/{file_id}/comments/threaded")
+@router.get("/api/v1/files/{file_id}/comments/threaded")
 async def get_threaded_comments(
     file_id: str,
     db: Session = Depends(get_db),
@@ -463,7 +464,7 @@ async def get_threaded_comments(
     return service.get_threaded_comments(file_id)
 
 
-@router.put("/api/comments/{comment_id}", response_model=FileCommentResponse)
+@router.put("/api/v1/comments/{comment_id}", response_model=FileCommentResponse)
 async def update_comment(
     comment_id: str,
     comment_data: FileCommentUpdate,
@@ -501,7 +502,7 @@ async def update_comment(
     )
 
 
-@router.delete("/api/comments/{comment_id}")
+@router.delete("/api/v1/comments/{comment_id}")
 async def delete_comment(
     comment_id: str,
     db: Session = Depends(get_db),
@@ -518,7 +519,7 @@ async def delete_comment(
     return {"message": "Comment deleted successfully"}
 
 
-@router.patch("/api/comments/{comment_id}/resolve", response_model=FileCommentResponse)
+@router.patch("/api/v1/comments/{comment_id}/resolve", response_model=FileCommentResponse)
 async def resolve_comment(
     comment_id: str,
     resolve_data: FileCommentResolveRequest,
@@ -561,7 +562,7 @@ async def resolve_comment(
     )
 
 
-@router.get("/api/projects/{project_id}/comments/unresolved", response_model=List[FileCommentResponse])
+@router.get("/api/v1/projects/{project_id}/comments/unresolved", response_model=List[FileCommentResponse])
 async def get_unresolved_comments(
     project_id: str,
     db: Session = Depends(get_db),
@@ -594,7 +595,7 @@ async def get_unresolved_comments(
     ]
 
 
-@router.get("/api/users/mentions", response_model=List[FileCommentResponse])
+@router.get("/api/v1/users/mentions", response_model=List[FileCommentResponse])
 async def get_user_mentions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)

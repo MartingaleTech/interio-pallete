@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from typing import List
 from sqlalchemy.orm import Session
 from src.models import (
@@ -9,8 +9,9 @@ from src.models import (
 from src.services import project_ticket_service, org_ticket_service
 from src.dependencies.auth_new import require_org_access, get_current_user, require_admin
 from src.config.database import get_db
+from src.utils.pagination import paginate_query, create_paginated_response
 
-project_ticket_router = APIRouter(prefix="/api/projects", tags=["project-tickets"])
+project_ticket_router = APIRouter(prefix="/api/v1/projects", tags=["project-tickets"])
 
 
 @project_ticket_router.post("/{project_id}/tickets", response_model=ProjectTicket)
@@ -24,14 +25,19 @@ async def create_project_ticket(
     return project_ticket_service.create_project_ticket(db, user, project_id, ticket)
 
 
-@project_ticket_router.get("/{project_id}/tickets", response_model=List[ProjectTicket])
+@project_ticket_router.get("/{project_id}/tickets")
 async def get_project_tickets(
     project_id: str,
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    """Get all tickets for a project."""
-    return project_ticket_service.get_project_tickets(db, user, project_id)
+    """Get all tickets for a project with pagination."""
+    from src.database.models import ProjectTicket as ProjectTicketModel
+    query = db.query(ProjectTicketModel).filter(ProjectTicketModel.project_id == project_id)
+    items, total = paginate_query(query, page, page_size)
+    return create_paginated_response(items, total, page, page_size)
 
 
 @project_ticket_router.get("/{project_id}/tickets/{ticket_id}", response_model=ProjectTicketWithDetails)
@@ -92,7 +98,7 @@ async def add_project_ticket_attachment(
     return project_ticket_service.add_ticket_attachment(db, user, ticket_id, attachment)
 
 
-org_ticket_router = APIRouter(prefix="/api/organizations/tickets", tags=["org-tickets"])
+org_ticket_router = APIRouter(prefix="/api/v1/organizations/tickets", tags=["org-tickets"])
 
 
 @org_ticket_router.post("", response_model=OrgTicket)
@@ -105,13 +111,18 @@ async def create_org_ticket(
     return org_ticket_service.create_org_ticket(db, user, ticket)
 
 
-@org_ticket_router.get("", response_model=List[OrgTicket])
+@org_ticket_router.get("")
 async def get_org_tickets(
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     user: User = Depends(require_org_access)
 ):
-    """Get all org tickets for the user's organization."""
-    return org_ticket_service.get_org_tickets_for_org(db, user)
+    """Get all org tickets for the user's organization with pagination."""
+    from src.database.models import OrgTicket as OrgTicketModel
+    query = db.query(OrgTicketModel).filter(OrgTicketModel.org_id == user.org_id)
+    items, total = paginate_query(query, page, page_size)
+    return create_paginated_response(items, total, page, page_size)
 
 
 @org_ticket_router.get("/{ticket_id}", response_model=OrgTicketWithDetails)
@@ -167,25 +178,35 @@ async def add_org_ticket_attachment(
     return org_ticket_service.add_org_ticket_attachment(db, user, ticket_id, attachment)
 
 
-admin_ticket_router = APIRouter(prefix="/api/admin/tickets", tags=["admin-tickets"])
+admin_ticket_router = APIRouter(prefix="/api/v1/admin/tickets", tags=["admin-tickets"])
 
 
-@admin_ticket_router.get("", response_model=List[OrgTicket])
+@admin_ticket_router.get("")
 async def get_all_org_tickets(
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     user: User = Depends(require_admin)
 ):
-    """Get all org tickets (admin only)."""
-    return org_ticket_service.get_all_org_tickets(db, user)
+    """Get all org tickets (admin only) with pagination."""
+    from src.database.models import OrgTicket as OrgTicketModel
+    query = db.query(OrgTicketModel)
+    items, total = paginate_query(query, page, page_size)
+    return create_paginated_response(items, total, page, page_size)
 
 
-@admin_ticket_router.get("/assigned", response_model=List[OrgTicket])
+@admin_ticket_router.get("/assigned")
 async def get_my_assigned_tickets(
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     user: User = Depends(require_admin)
 ):
-    """Get all org tickets assigned to me (admin)."""
-    return org_ticket_service.get_my_assigned_org_tickets(db, user)
+    """Get all org tickets assigned to me (admin) with pagination."""
+    from src.database.models import OrgTicket as OrgTicketModel
+    query = db.query(OrgTicketModel).filter(OrgTicketModel.assigned_to == user.id)
+    items, total = paginate_query(query, page, page_size)
+    return create_paginated_response(items, total, page, page_size)
 
 
 @admin_ticket_router.get("/{ticket_id}", response_model=OrgTicketWithDetails)
@@ -220,13 +241,18 @@ async def add_org_ticket_comment_admin(
     return org_ticket_service.add_org_ticket_comment(db, user, ticket_id, comment)
 
 
-my_tickets_router = APIRouter(prefix="/api/my-tickets", tags=["my-tickets"])
+my_tickets_router = APIRouter(prefix="/api/v1/my-tickets", tags=["my-tickets"])
 
 
-@my_tickets_router.get("/assigned", response_model=List[ProjectTicket])
+@my_tickets_router.get("/assigned")
 async def get_my_assigned_project_tickets(
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     user: User = Depends(require_org_access)
 ):
-    """Get all project tickets assigned to me."""
-    return project_ticket_service.get_my_assigned_tickets(db, user)
+    """Get all project tickets assigned to me with pagination."""
+    from src.database.models import ProjectTicket as ProjectTicketModel
+    query = db.query(ProjectTicketModel).filter(ProjectTicketModel.assigned_to == user.id)
+    items, total = paginate_query(query, page, page_size)
+    return create_paginated_response(items, total, page, page_size)
