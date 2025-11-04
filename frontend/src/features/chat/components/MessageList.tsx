@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 import { useChat } from '../../../state/ChatContext'
 import { useAuth } from '../../../state/AuthContext'
 import { ChatMessage } from '../../../types/chat'
-import { ScrollArea } from '../../../components/ui/scroll-area'
 import { Button } from '../../../components/ui/button'
 import { Pencil, Trash2, Check, CheckCheck } from 'lucide-react'
 
@@ -14,12 +13,11 @@ export function MessageList({ onEditMessage }: MessageListProps) {
   const { currentMessages, typingUsers, deleteMessage } = useChat()
   const { user } = useAuth()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-  }, [currentMessages])
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [currentMessages.length])
 
   const handleDelete = (messageId: string, isOwnMessage: boolean) => {
     if (confirm('Are you sure you want to delete this message?')) {
@@ -41,8 +39,8 @@ export function MessageList({ onEditMessage }: MessageListProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col">
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+    <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
         <div className="space-y-4">
           {currentMessages.map((message) => {
             const isOwnMessage = message.sender_id === user?.id
@@ -166,8 +164,9 @@ export function MessageList({ onEditMessage }: MessageListProps) {
               </div>
             </div>
           )}
+          <div ref={bottomRef} />
         </div>
-      </ScrollArea>
+      </div>
     </div>
   )
 }

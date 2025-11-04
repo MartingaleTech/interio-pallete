@@ -46,7 +46,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       chatWebSocketService.connect(token)
 
       const unsubscribeMessages = chatWebSocketService.onMessage((message) => {
+        console.log('Received WebSocket event:', message.type, message.payload)
         switch (message.type) {
+          case 'new_message':
           case 'message_received':
             handleMessageReceived(message.payload)
             break
@@ -85,7 +87,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, [token, user])
 
   const handleMessageReceived = useCallback((payload: any) => {
-    const newMessage: ChatMessage = payload.message
+    const newMessage: ChatMessage = payload.message ?? payload
+    console.log('Processing new message:', newMessage)
     
     setCurrentMessages(prev => {
       const exists = prev.some(m => m.id === newMessage.id)
@@ -107,7 +110,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     } else {
       loadDirectConversations()
     }
-  }, [user])
+  }, [user, loadDirectConversations])
 
   const handleMessageEdited = useCallback((payload: any) => {
     const editedMessage: ChatMessage = payload.message
