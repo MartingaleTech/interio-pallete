@@ -365,10 +365,11 @@ def get_user_chat_rooms(
 ):
     """Get all chat rooms for the current user"""
     try:
+        logger.info(f"Getting chat rooms for user type: {type(user)}, user: {user}")
         rooms = chat_service.get_user_chat_rooms(db, user)
         return rooms
     except Exception as e:
-        logger.error(f"Error getting chat rooms: {e}")
+        logger.exception(f"Error getting chat rooms: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -489,10 +490,11 @@ def get_direct_conversations(
 ):
     """Get list of direct message conversations"""
     try:
+        logger.info(f"Getting direct conversations for user type: {type(user)}, user: {user}")
         conversations = chat_service.get_direct_message_conversations(db, user)
         return conversations
     except Exception as e:
-        logger.error(f"Error getting conversations: {e}")
+        logger.exception(f"Error getting conversations: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
