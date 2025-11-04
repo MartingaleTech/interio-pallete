@@ -45,11 +45,14 @@ async def websocket_endpoint(
 ):
     """WebSocket endpoint for real-time chat"""
     try:
+        logger.info(f"[WS] Connection attempt - token present: {bool(token)}, token length: {len(token) if token else 0}")
         user = await get_current_user_ws(token, db)
         if not user:
+            logger.error(f"[WS] Authentication failed - token: {token[:20]}...")
             await websocket.close(code=1008, reason="Authentication failed")
             return
         
+        logger.info(f"[WS] User authenticated: {user.id} ({user.email})")
         await connection_manager.connect(websocket, user.id)
         
         try:
