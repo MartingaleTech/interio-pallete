@@ -22,6 +22,7 @@ interface WSMessage {
 }
 
 type MessageHandler = (message: WSMessage) => void
+type ConnectionHandler = (connected: boolean) => void
 
 class ChatWebSocketService {
   private ws: WebSocket | null = null
@@ -30,6 +31,7 @@ class ChatWebSocketService {
   private maxReconnectAttempts = 5
   private reconnectDelay = 1000
   private messageHandlers: Set<MessageHandler> = new Set()
+  private connectionHandlers: Set<ConnectionHandler> = new Set()
   private isConnecting = false
   private shouldReconnect = true
 
@@ -52,12 +54,18 @@ class ChatWebSocketService {
         console.log('WebSocket connected')
         this.isConnecting = false
         this.reconnectAttempts = 0
+        this.connectionHandlers.forEach(handler => handler(true))
       }
 
       this.ws.onmessage = (event) => {
         try {
-          const message: WSMessage = JSON.parse(event.data)
-          this.messageHandlers.forEach(handler => handler(message))
+          const incoming = JSON.parse(event.data)
+          const normalized: WSMessage = {
+            type: incoming.type,
+            payload: incoming.payload ?? incoming.data
+          }
+          console.log('Received WebSocket message:', normalized)
+          this.messageHandlers.forEach(handler => handler(normalized))
         } catch (error) {
           console.error('Failed to parse WebSocket message:', error)
         }
@@ -72,6 +80,7 @@ class ChatWebSocketService {
         console.log('WebSocket disconnected')
         this.isConnecting = false
         this.ws = null
+        this.connectionHandlers.forEach(handler => handler(false))
 
         if (this.shouldReconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
           this.reconnectAttempts++
@@ -110,6 +119,13 @@ class ChatWebSocketService {
     }
   }
 
+  onConnectionChange(handler: ConnectionHandler) {
+    this.connectionHandlers.add(handler)
+    return () => {
+      this.connectionHandlers.delete(handler)
+    }
+  }
+
   private send(message: WSMessage) {
     if (!this.isConnected()) {
       console.error('WebSocket is not connected')
@@ -117,7 +133,12 @@ class ChatWebSocketService {
     }
 
     try {
-      this.ws?.send(JSON.stringify(message))
+      const backendMessage = {
+        type: message.type,
+        data: message.payload
+      }
+      console.log('Sending WebSocket message:', backendMessage)
+      this.ws?.send(JSON.stringify(backendMessage))
     } catch (error) {
       console.error('Failed to send WebSocket message:', error)
     }
