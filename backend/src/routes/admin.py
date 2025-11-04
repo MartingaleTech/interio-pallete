@@ -9,8 +9,9 @@ from src.models import (
 from src.services import organization_service_new, invoice_service_new, admin_service_new
 from src.dependencies.auth_new import require_admin, get_current_user
 from src.config.database import get_db
+from src.utils.pagination import paginate_query, create_paginated_response
 
-router = APIRouter(prefix="/api/admin", tags=["admin"])
+router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
 
 @router.post("/organizations", response_model=Organization)
@@ -23,13 +24,20 @@ async def create_org(
     return organization_service_new.create_organization(db, org)
 
 
-@router.get("/organizations", response_model=List[Organization])
+@router.get("/organizations")
 async def get_all_orgs(
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    sort_by: str = Query(None, description="Field to sort by"),
+    sort_order: str = Query("asc", description="Sort order: asc or desc"),
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin)
 ):
-    """Get all organizations (admin only)."""
-    return organization_service_new.get_all_organizations(db)
+    """Get all organizations (admin only) with pagination."""
+    from src.database.models import Organization as OrgModel
+    query = db.query(OrgModel)
+    items, total = paginate_query(query, page, page_size, sort_by, sort_order)
+    return create_paginated_response(items, total, page, page_size)
 
 
 @router.get("/organizations/{org_id}", response_model=Organization)
@@ -63,14 +71,19 @@ async def delete_org(
     return organization_service_new.delete_organization(db, org_id)
 
 
-@router.get("/organizations/{org_id}/members", response_model=List[User])
+@router.get("/organizations/{org_id}/members")
 async def get_org_members(
     org_id: str,
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin)
 ):
-    """Get all members of an organization (admin only)."""
-    return organization_service_new.get_organization_members(db, org_id)
+    """Get all members of an organization (admin only) with pagination."""
+    from src.database.models import User as UserModel
+    query = db.query(UserModel).filter(UserModel.org_id == org_id)
+    items, total = paginate_query(query, page, page_size)
+    return create_paginated_response(items, total, page, page_size)
 
 
 @router.post("/organizations/{org_id}/members", response_model=User)
@@ -106,14 +119,19 @@ async def create_invoice(
     return invoice_service_new.create_org_invoice(db, org_id, invoice)
 
 
-@router.get("/organizations/{org_id}/invoices", response_model=List[OrgInvoice])
+@router.get("/organizations/{org_id}/invoices")
 async def get_invoices(
     org_id: str,
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin)
 ):
-    """Get all invoices for an organization (admin only)."""
-    return invoice_service_new.get_org_invoices(db, org_id)
+    """Get all invoices for an organization (admin only) with pagination."""
+    from src.database.models import OrgInvoice as OrgInvoiceModel
+    query = db.query(OrgInvoiceModel).filter(OrgInvoiceModel.org_id == org_id)
+    items, total = paginate_query(query, page, page_size)
+    return create_paginated_response(items, total, page, page_size)
 
 
 @router.get("/stats", response_model=AdminStats)
@@ -156,23 +174,33 @@ async def record_org_view(
     return {"message": "View recorded"}
 
 
-@router.get("/support-tickets", response_model=List[SupportTicket])
+@router.get("/support-tickets")
 async def get_all_tickets(
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin)
 ):
-    """Get all support tickets (admin only)."""
-    return admin_service_new.get_all_support_tickets(db)
+    """Get all support tickets (admin only) with pagination."""
+    from src.database.models import SupportTicket as SupportTicketModel
+    query = db.query(SupportTicketModel)
+    items, total = paginate_query(query, page, page_size)
+    return create_paginated_response(items, total, page, page_size)
 
 
-@router.get("/organizations/{org_id}/support-tickets", response_model=List[SupportTicket])
+@router.get("/organizations/{org_id}/support-tickets")
 async def get_org_tickets(
     org_id: str,
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin)
 ):
-    """Get support tickets for an organization."""
-    return admin_service_new.get_support_tickets_for_org(db, org_id)
+    """Get support tickets for an organization with pagination."""
+    from src.database.models import SupportTicket as SupportTicketModel
+    query = db.query(SupportTicketModel).filter(SupportTicketModel.org_id == org_id)
+    items, total = paginate_query(query, page, page_size)
+    return create_paginated_response(items, total, page, page_size)
 
 
 @router.patch("/support-tickets/{ticket_id}", response_model=SupportTicket)
@@ -186,14 +214,21 @@ async def update_ticket(
     return admin_service_new.update_support_ticket(db, ticket_id, updates)
 
 
-@router.get("/notifications", response_model=List[AdminNotification])
+@router.get("/notifications")
 async def get_notifications(
     unread_only: bool = Query(False),
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin)
 ):
-    """Get admin notifications."""
-    return admin_service_new.get_admin_notifications(db, admin.id, unread_only)
+    """Get admin notifications with pagination."""
+    from src.database.models import AdminNotification as AdminNotificationModel
+    query = db.query(AdminNotificationModel).filter(AdminNotificationModel.admin_id == admin.id)
+    if unread_only:
+        query = query.filter(AdminNotificationModel.is_read == False)
+    items, total = paginate_query(query, page, page_size)
+    return create_paginated_response(items, total, page, page_size)
 
 
 @router.post("/notifications/{notification_id}/read")

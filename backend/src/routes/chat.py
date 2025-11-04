@@ -344,7 +344,7 @@ async def handle_leave_room(db: Session, user: User, payload: dict):
 
 
 
-@router.post("/api/chat/rooms", response_model=ChatRoomResponse)
+@router.post("/api/v1/chat/rooms", response_model=ChatRoomResponse)
 def create_chat_room(
     request: CreateChatRoomRequest,
     db: Session = Depends(get_db),
@@ -361,7 +361,7 @@ def create_chat_room(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/api/chat/rooms", response_model=List[ChatRoomResponse])
+@router.get("/api/v1/chat/rooms", response_model=List[ChatRoomResponse])
 def get_user_chat_rooms(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
@@ -376,7 +376,7 @@ def get_user_chat_rooms(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/api/chat/rooms/{room_id}", response_model=ChatRoomResponse)
+@router.get("/api/v1/chat/rooms/{room_id}", response_model=ChatRoomResponse)
 def get_chat_room(
     room_id: str,
     db: Session = Depends(get_db),
@@ -395,7 +395,7 @@ def get_chat_room(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.post("/api/chat/rooms/{room_id}/participants")
+@router.post("/api/v1/chat/rooms/{room_id}/participants")
 def add_participant(
     room_id: str,
     request: AddParticipantRequest,
@@ -411,7 +411,7 @@ def add_participant(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.delete("/api/chat/rooms/{room_id}/participants/{user_id}")
+@router.delete("/api/v1/chat/rooms/{room_id}/participants/{user_id}")
 def remove_participant(
     room_id: str,
     user_id: str,
@@ -429,7 +429,7 @@ def remove_participant(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/api/chat/rooms/{room_id}/participants")
+@router.get("/api/v1/chat/rooms/{room_id}/participants")
 def get_room_participants(
     room_id: str,
     db: Session = Depends(get_db),
@@ -446,7 +446,7 @@ def get_room_participants(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/api/chat/rooms/{room_id}/messages")
+@router.get("/api/v1/chat/rooms/{room_id}/messages")
 def get_room_messages(
     room_id: str,
     limit: int = Query(50, ge=1, le=100),
@@ -467,7 +467,7 @@ def get_room_messages(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/api/chat/direct/{user_id}/messages")
+@router.get("/api/v1/chat/direct/{user_id}/messages")
 def get_direct_messages(
     user_id: str,
     limit: int = Query(50, ge=1, le=100),
@@ -486,7 +486,7 @@ def get_direct_messages(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/api/chat/direct/conversations")
+@router.get("/api/v1/chat/direct/conversations")
 def get_direct_conversations(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
@@ -501,7 +501,7 @@ def get_direct_conversations(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/api/chat/org/members")
+@router.get("/api/v1/chat/org/members")
 def get_org_members(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
@@ -527,7 +527,7 @@ def get_org_members(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.post("/api/chat/search")
+@router.post("/api/v1/chat/search")
 def search_messages(
     request: SearchMessagesRequest,
     db: Session = Depends(get_db),
@@ -544,7 +544,7 @@ def search_messages(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/api/chat/rooms/{room_id}/unread")
+@router.get("/api/v1/chat/rooms/{room_id}/unread")
 def get_unread_count(
     room_id: str,
     db: Session = Depends(get_db),
