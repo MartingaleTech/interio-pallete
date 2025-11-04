@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Building2, CreditCard, MessageSquare, TicketIcon } from 'lucide-react'
+import { ArrowLeft, MessageSquare } from 'lucide-react'
 import { adminService, SupportTicket } from '../../../services/adminService'
 import { Organization } from '../../../types'
 
