@@ -78,8 +78,8 @@ class ChatWebSocketService {
         this.isConnecting = false
       }
 
-      this.ws.onclose = () => {
-        console.log('WebSocket disconnected')
+      this.ws.onclose = (event) => {
+        console.log('[WS] Disconnected - code:', event.code, 'reason:', event.reason, 'wasClean:', event.wasClean)
         this.isConnecting = false
         this.ws = null
         this.connectionHandlers.forEach(handler => handler(false))
@@ -87,7 +87,7 @@ class ChatWebSocketService {
         if (this.shouldReconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
           this.reconnectAttempts++
           const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1)
-          console.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`)
+          console.log(`[WS] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`)
           setTimeout(() => {
             if (this.token) {
               this.connect(this.token)
