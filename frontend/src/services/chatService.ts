@@ -4,7 +4,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export const chatService = {
   async createChatRoom(token: string, projectId: string, name: string, description?: string): Promise<ChatRoom> {
-    const response = await fetch(`${API_URL}/api/chat/rooms`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/rooms`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -25,7 +25,7 @@ export const chatService = {
   },
 
   async getChatRooms(token: string): Promise<ChatRoom[]> {
-    const response = await fetch(`${API_URL}/api/chat/rooms`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/rooms`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -39,7 +39,7 @@ export const chatService = {
   },
 
   async getChatRoom(token: string, roomId: string): Promise<ChatRoom> {
-    const response = await fetch(`${API_URL}/api/chat/rooms/${roomId}`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/rooms/${roomId}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -62,7 +62,7 @@ export const chatService = {
       params.append('before_timestamp', beforeTimestamp)
     }
 
-    const response = await fetch(`${API_URL}/api/chat/rooms/${roomId}/messages?${params}`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/rooms/${roomId}/messages?${params}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -85,7 +85,7 @@ export const chatService = {
       params.append('before_timestamp', beforeTimestamp)
     }
 
-    const response = await fetch(`${API_URL}/api/chat/direct/${userId}/messages?${params}`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/direct/${userId}/messages?${params}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -99,7 +99,7 @@ export const chatService = {
   },
 
   async getDirectMessageConversations(token: string): Promise<DirectMessageConversation[]> {
-    const response = await fetch(`${API_URL}/api/chat/direct/conversations`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/direct/conversations`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -113,7 +113,7 @@ export const chatService = {
   },
 
   async getOrgMembers(token: string): Promise<Array<{ id: string, name: string, email: string, role: string }>> {
-    const response = await fetch(`${API_URL}/api/chat/org/members`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/org/members`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -127,7 +127,7 @@ export const chatService = {
   },
 
   async searchMessages(token: string, query: string, roomId?: string, limit: number = 50): Promise<ChatMessage[]> {
-    const response = await fetch(`${API_URL}/api/chat/search`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/search`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -148,7 +148,7 @@ export const chatService = {
   },
 
   async getRoomParticipants(token: string, roomId: string): Promise<ChatRoomParticipant[]> {
-    const response = await fetch(`${API_URL}/api/chat/rooms/${roomId}/participants`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/rooms/${roomId}/participants`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -162,7 +162,7 @@ export const chatService = {
   },
 
   async addParticipant(token: string, roomId: string, userId: string, isAdmin: boolean = false): Promise<void> {
-    const response = await fetch(`${API_URL}/api/chat/rooms/${roomId}/participants`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/rooms/${roomId}/participants`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -180,7 +180,7 @@ export const chatService = {
   },
 
   async removeParticipant(token: string, roomId: string, userId: string): Promise<void> {
-    const response = await fetch(`${API_URL}/api/chat/rooms/${roomId}/participants/${userId}`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/rooms/${roomId}/participants/${userId}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`
@@ -193,7 +193,7 @@ export const chatService = {
   },
 
   async getUnreadCount(token: string, roomId: string): Promise<number> {
-    const response = await fetch(`${API_URL}/api/chat/rooms/${roomId}/unread`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/rooms/${roomId}/unread`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -208,7 +208,7 @@ export const chatService = {
   },
 
   async getNotificationSettings(token: string): Promise<ChatNotificationSettings> {
-    const response = await fetch(`${API_URL}/api/chat/settings`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/settings`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -222,7 +222,7 @@ export const chatService = {
   },
 
   async updateNotificationSettings(token: string, settings: Partial<ChatNotificationSettings>): Promise<ChatNotificationSettings> {
-    const response = await fetch(`${API_URL}/api/chat/settings`, {
+    const response = await fetch(`${API_URL}/api/v1/chat/settings`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

@@ -3,7 +3,7 @@ import { User } from '../types'
 
 export const authService = {
   async login(email: string, password: string) {
-    const res = await api.fetch('/api/auth/login', {
+    const res = await api.fetch('/api/v1/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -18,7 +18,7 @@ export const authService = {
   },
 
   async requestOtp(phone: string) {
-    const res = await api.fetch('/api/auth/phone/request-otp', {
+    const res = await api.fetch('/api/v1/auth/phone/request-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone })
@@ -33,7 +33,7 @@ export const authService = {
   },
 
   async verifyOtp(phone: string, otp: string) {
-    const res = await api.fetch('/api/auth/phone/verify-otp', {
+    const res = await api.fetch('/api/v1/auth/phone/verify-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone, otp })
@@ -48,7 +48,7 @@ export const authService = {
   },
 
   async getCurrentUser(token: string): Promise<User> {
-    const res = await api.fetchWithAuth('/api/auth/me', token)
+    const res = await api.fetchWithAuth('/api/v1/auth/me', token)
     
     if (!res.ok) {
       throw new Error('Failed to fetch user')
