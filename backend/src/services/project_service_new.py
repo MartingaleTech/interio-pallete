@@ -41,7 +41,6 @@ def create_project(db: Session, user: User, project: ProjectCreate):
         "description": project.description,
         "status": ProjectStatus.PLANNING,
         "client_id": project.client_id,
-        "client_name": db_client.name,
         "budget": project.budget,
         "start_date": project.start_date,
         "end_date": project.end_date,
@@ -213,7 +212,7 @@ def create_project_design(db: Session, user: User, project_id: str, design: Proj
         "description": design.description,
         "file_url": design.file_url,
         "file_type": design.file_type,
-        "uploaded_by": user.name,
+        "uploaded_by_id": user.id,
         "uploaded_at": datetime.now(timezone.utc)
     }
     db_design = design_repo.create(design_data)
