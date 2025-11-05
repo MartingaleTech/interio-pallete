@@ -96,7 +96,7 @@ class FileManagementService:
             "file_size": file_size,
             "uploaded_by_id": user_id,
             "uploaded_by": user_name,
-            "uploaded_at": datetime.now(datetime.UTC),
+            "uploaded_at": datetime.now(timezone.utc),
             "version": 1,
             "is_latest_version": True,
             "thumbnail_url": thumbnail_url,
@@ -125,7 +125,7 @@ class FileManagementService:
             "title": "New File Uploaded",
             "message": f"{user_name} uploaded {title} ({sanitized_filename})",
             "is_read": False,
-            "created_at": datetime.now(datetime.UTC)
+            "created_at": datetime.now(timezone.utc)
         }
         self.notification_repo.create(notification_data)
         
@@ -208,7 +208,7 @@ class FileManagementService:
             "file_size": file_size,
             "uploaded_by_id": user_id,
             "uploaded_by": user_name,
-            "uploaded_at": datetime.now(datetime.UTC),
+            "uploaded_at": datetime.now(timezone.utc),
             "version": next_version,
             "parent_id": root_id,
             "is_latest_version": True,
@@ -367,7 +367,7 @@ class FileManagementService:
             "file_size": version_design.file_size,
             "uploaded_by_id": user_id,
             "uploaded_by": user_name,
-            "uploaded_at": datetime.now(datetime.UTC),
+            "uploaded_at": datetime.now(timezone.utc),
             "version": next_version,
             "parent_id": root_id,
             "is_latest_version": True,
@@ -444,7 +444,7 @@ class FileManagementService:
             "can_download": can_download,
             "can_comment": can_comment,
             "can_delete": can_delete,
-            "created_at": datetime.now(datetime.UTC)
+            "created_at": datetime.now(timezone.utc)
         }
         
         return self.permission_repo.create(permission_data)
@@ -465,7 +465,7 @@ class FileManagementService:
             "user_name": user_name,
             "action": action,
             "action_metadata": json.dumps(metadata) if metadata else None,
-            "created_at": datetime.now(datetime.UTC)
+            "created_at": datetime.now(timezone.utc)
         }
         
         return self.audit_repo.create(log_data)

@@ -49,7 +49,7 @@ class ConnectionManager:
                 "type": WSMessageType.CONNECTED,
                 "data": {
                     "user_id": user_id,
-                    "timestamp": datetime.now(datetime.UTC).isoformat()
+                    "timestamp": datetime.now(timezone.utc).isoformat()
                 }
             }
         )
@@ -103,7 +103,7 @@ class ConnectionManager:
                 "data": {
                     "user_id": user_id,
                     "room_id": room_id,
-                    "timestamp": datetime.now(datetime.UTC).isoformat()
+                    "timestamp": datetime.now(timezone.utc).isoformat()
                 }
             },
             exclude_user=user_id
@@ -133,7 +133,7 @@ class ConnectionManager:
                 "data": {
                     "user_id": user_id,
                     "room_id": room_id,
-                    "timestamp": datetime.now(datetime.UTC).isoformat()
+                    "timestamp": datetime.now(timezone.utc).isoformat()
                 }
             }
         )
@@ -177,7 +177,7 @@ class ConnectionManager:
                 "user_id": user_id,
                 "room_id": room_id,
                 "recipient_id": recipient_id,
-                "timestamp": datetime.now(datetime.UTC).isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
         }
         
@@ -194,7 +194,7 @@ class ConnectionManager:
                 "message_id": message_id,
                 "user_id": user_id,
                 "room_id": room_id,
-                "timestamp": datetime.now(datetime.UTC).isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
         }
         
@@ -207,7 +207,7 @@ class ConnectionManager:
             "data": {
                 "message_id": message_id,
                 "user_id": user_id,
-                "timestamp": datetime.now(datetime.UTC).isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
         }
         
@@ -219,7 +219,7 @@ class ConnectionManager:
             "type": WSMessageType.ERROR,
             "error": error,
             "details": details,
-            "timestamp": datetime.now(datetime.UTC).isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         
         await self.send_personal_message(user_id, message)

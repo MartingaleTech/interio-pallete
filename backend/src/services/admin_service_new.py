@@ -26,14 +26,14 @@ def record_org_view(db: Session, admin_id: str, org_id: str):
     ).first()
     
     if existing:
-        existing.viewed_at = datetime.now(datetime.UTC)
+        existing.viewed_at = datetime.now(timezone.utc)
         db.commit()
     else:
         view_record = DBRecentlyViewedOrg(
             id=str(uuid.uuid4()),
             admin_id=admin_id,
             org_id=org_id,
-            viewed_at=datetime.now(datetime.UTC)
+            viewed_at=datetime.now(timezone.utc)
         )
         db.add(view_record)
         db.commit()
@@ -105,8 +105,8 @@ def create_support_ticket(db: Session, org_id: str, user_id: str, ticket: Suppor
         description=ticket.description,
         status='open',
         priority=ticket.priority,
-        created_at=datetime.now(datetime.UTC),
-        updated_at=datetime.now(datetime.UTC)
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc)
     )
     
     db.add(db_ticket)
@@ -148,7 +148,7 @@ def update_support_ticket(db: Session, ticket_id: str, updates: SupportTicketUpd
     if updates.priority:
         db_ticket.priority = updates.priority
     
-    db_ticket.updated_at = datetime.now(datetime.UTC)
+    db_ticket.updated_at = datetime.now(timezone.utc)
     
     db.commit()
     db.refresh(db_ticket)
@@ -171,7 +171,7 @@ def create_notification_for_new_ticket(db: Session, org_id: str, ticket_id: str,
             title='New Support Ticket',
             message=f'New support ticket created: {subject}',
             is_read=0,
-            created_at=datetime.now(datetime.UTC)
+            created_at=datetime.now(timezone.utc)
         )
         db.add(notification)
     

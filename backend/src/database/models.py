@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Float, DateTime, ForeignKey, Enum as SQLEnum, Integer, Text, Boolean
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from src.config.database import Base
 from src.models.enums import UserRole, SubscriptionStatus, ProjectStatus, PaymentStatus, TicketStatus, TicketPriority, TicketType
 import enum
@@ -82,7 +82,7 @@ class Project(Base):
     budget = Column(Float, nullable=False)
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.now(datetime.UTC))
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
     
     organization = relationship("Organization", back_populates="projects")
     client = relationship("Client", back_populates="projects")
@@ -133,7 +133,7 @@ class CalendarEvent(Base):
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
     attendees = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(datetime.UTC))
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
     
     project = relationship("Project", back_populates="calendar_events")
 
@@ -150,7 +150,7 @@ class ProjectDesign(Base):
     file_type = Column(String, nullable=False)
     file_size = Column(Integer, nullable=False, default=0)
     uploaded_by_id = Column(String, ForeignKey("users.id"), nullable=False)
-    uploaded_at = Column(DateTime, default=datetime.now(datetime.UTC))
+    uploaded_at = Column(DateTime, default=datetime.now(timezone.utc))
     version = Column(Integer, nullable=False, default=1)
     parent_id = Column(String, ForeignKey("project_designs.id"), nullable=True)
     is_latest_version = Column(Boolean, nullable=False, default=True)
