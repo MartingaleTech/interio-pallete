@@ -11,7 +11,6 @@ import { useAuth } from '../../../state/AuthContext'
 export function LoginForm() {
   const { login } = useAuth()
   const navigate = useNavigate()
-  const [loginMethod] = useState<'email' | 'phone'>('email')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [phone, setPhone] = useState('')
@@ -73,7 +72,7 @@ export function LoginForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Tabs defaultValue="email" className="w-full" onValueChange={(v) => setLoginMethod(v as 'email' | 'phone')}>
+          <Tabs defaultValue="email" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="email">
                 <Mail className="w-4 h-4 mr-2" />
@@ -105,7 +104,7 @@ export function LoginForm() {
                 />
               </div>
               <p className="text-xs text-gray-500">
-                Demo: admin@designerconnect.com / admin123
+                Demo: admin@interiopalette.com / admin123
               </p>
               <Button 
                 onClick={handleEmailLogin} 
