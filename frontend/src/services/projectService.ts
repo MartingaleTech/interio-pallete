@@ -1,3 +1,5 @@
+import { toItems } from './pagination'
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export const projectService = {
@@ -83,7 +85,8 @@ export const projectService = {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch tickets')
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async createProjectTicket(token: string, projectId: string, data: any) {
@@ -104,7 +107,8 @@ export const projectService = {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch team members')
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async addTeamMember(token: string, projectId: string, data: any) {
@@ -125,7 +129,8 @@ export const projectService = {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch calendar events')
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async createCalendarEvent(token: string, projectId: string, data: any) {
@@ -146,7 +151,8 @@ export const projectService = {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch designs')
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async createProjectDesign(token: string, projectId: string, data: any) {
@@ -167,7 +173,8 @@ export const projectService = {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch invoices')
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async createProjectInvoice(token: string, projectId: string, data: any) {

@@ -9,12 +9,14 @@ import {
   TicketCommentFormData,
   TicketAttachmentFormData
 } from '../types'
+import { toItems } from './pagination'
 
 export const ticketService = {
   async getProjectTickets(token: string, projectId: string): Promise<ProjectTicket[]> {
     const res = await api.fetchWithAuth(`/api/v1/projects/${projectId}/tickets`, token)
     if (!res.ok) throw new Error('Failed to fetch project tickets')
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async getProjectTicket(token: string, projectId: string, ticketId: string): Promise<ProjectTicketWithDetails> {
@@ -88,11 +90,12 @@ export const ticketService = {
   async getOrgTickets(token: string): Promise<OrgTicket[]> {
     const res = await api.fetchWithAuth('/api/v1/organizations/tickets', token)
     if (!res.ok) throw new Error('Failed to fetch org tickets')
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async getOrgTicket(token: string, ticketId: string): Promise<OrgTicketWithDetails> {
-    const res = await api.fetchWithAuth(`/api/organizations/tickets/${ticketId}`, token)
+    const res = await api.fetchWithAuth(`/api/v1/organizations/tickets/${ticketId}`, token)
     if (!res.ok) throw new Error('Failed to fetch org ticket')
     return res.json()
   },
@@ -111,7 +114,7 @@ export const ticketService = {
   },
 
   async updateOrgTicket(token: string, ticketId: string, data: Partial<OrgTicketFormData> & { status?: string, assigned_to?: string }): Promise<OrgTicket> {
-    const res = await api.fetchWithAuth(`/api/organizations/tickets/${ticketId}`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/organizations/tickets/${ticketId}`, token, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -124,7 +127,7 @@ export const ticketService = {
   },
 
   async deleteOrgTicket(token: string, ticketId: string): Promise<void> {
-    const res = await api.fetchWithAuth(`/api/organizations/tickets/${ticketId}`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/organizations/tickets/${ticketId}`, token, {
       method: 'DELETE'
     })
     if (!res.ok) {
@@ -134,7 +137,7 @@ export const ticketService = {
   },
 
   async addOrgTicketComment(token: string, ticketId: string, data: TicketCommentFormData) {
-    const res = await api.fetchWithAuth(`/api/organizations/tickets/${ticketId}/comments`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/organizations/tickets/${ticketId}/comments`, token, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -147,7 +150,7 @@ export const ticketService = {
   },
 
   async addOrgTicketAttachment(token: string, ticketId: string, data: TicketAttachmentFormData) {
-    const res = await api.fetchWithAuth(`/api/organizations/tickets/${ticketId}/attachments`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/organizations/tickets/${ticketId}/attachments`, token, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -162,23 +165,25 @@ export const ticketService = {
   async getAllOrgTickets(token: string): Promise<OrgTicket[]> {
     const res = await api.fetchWithAuth('/api/v1/admin/tickets', token)
     if (!res.ok) throw new Error('Failed to fetch all org tickets')
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async getMyAssignedTickets(token: string): Promise<OrgTicket[]> {
     const res = await api.fetchWithAuth('/api/v1/admin/tickets/assigned', token)
     if (!res.ok) throw new Error('Failed to fetch assigned tickets')
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async getOrgTicketAdmin(token: string, ticketId: string): Promise<OrgTicketWithDetails> {
-    const res = await api.fetchWithAuth(`/api/admin/tickets/${ticketId}`, token)
+    const res = await api.fetchWithAuth(`/api/v1/admin/tickets/${ticketId}`, token)
     if (!res.ok) throw new Error('Failed to fetch org ticket')
     return res.json()
   },
 
   async updateOrgTicketAdmin(token: string, ticketId: string, data: Partial<OrgTicketFormData> & { status?: string, assigned_to?: string }): Promise<OrgTicket> {
-    const res = await api.fetchWithAuth(`/api/admin/tickets/${ticketId}`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/admin/tickets/${ticketId}`, token, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -191,7 +196,7 @@ export const ticketService = {
   },
 
   async addOrgTicketCommentAdmin(token: string, ticketId: string, data: TicketCommentFormData) {
-    const res = await api.fetchWithAuth(`/api/admin/tickets/${ticketId}/comments`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/admin/tickets/${ticketId}/comments`, token, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -206,6 +211,7 @@ export const ticketService = {
   async getMyAssignedProjectTickets(token: string): Promise<ProjectTicket[]> {
     const res = await api.fetchWithAuth('/api/v1/my-tickets/assigned', token)
     if (!res.ok) throw new Error('Failed to fetch my assigned tickets')
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   }
 }

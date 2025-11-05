@@ -1,5 +1,6 @@
 import { api } from './api'
 import { Organization, OrganizationFormData, MemberFormData } from '../types'
+import { toItems } from './pagination'
 
 export interface AdminStats {
   total_orgs: number
@@ -41,11 +42,12 @@ export const adminService = {
       throw new Error('Failed to fetch organizations')
     }
     
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async getOrganization(token: string, orgId: string): Promise<Organization> {
-    const res = await api.fetchWithAuth(`/api/admin/organizations/${orgId}`, token)
+    const res = await api.fetchWithAuth(`/api/v1/admin/organizations/${orgId}`, token)
     
     if (!res.ok) {
       throw new Error('Failed to fetch organization')
@@ -70,7 +72,7 @@ export const adminService = {
   },
 
   async updateOrganization(token: string, orgId: string, data: Partial<OrganizationFormData>) {
-    const res = await api.fetchWithAuth(`/api/admin/organizations/${orgId}`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/admin/organizations/${orgId}`, token, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -85,7 +87,7 @@ export const adminService = {
   },
 
   async deleteOrganization(token: string, orgId: string) {
-    const res = await api.fetchWithAuth(`/api/admin/organizations/${orgId}`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/admin/organizations/${orgId}`, token, {
       method: 'DELETE'
     })
     
@@ -98,7 +100,7 @@ export const adminService = {
   },
 
   async addOrganizationMember(token: string, orgId: string, data: Omit<MemberFormData, 'org_id'>) {
-    const res = await api.fetchWithAuth(`/api/admin/organizations/${orgId}/members`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/admin/organizations/${orgId}/members`, token, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -123,7 +125,7 @@ export const adminService = {
   },
 
   async getNewlyAddedOrgs(token: string, limit: number = 5): Promise<Organization[]> {
-    const res = await api.fetchWithAuth(`/api/admin/organizations/newly-added?limit=${limit}`, token)
+    const res = await api.fetchWithAuth(`/api/v1/admin/organizations/newly-added?limit=${limit}`, token)
     
     if (!res.ok) {
       throw new Error('Failed to fetch newly added organizations')
@@ -133,7 +135,7 @@ export const adminService = {
   },
 
   async getRecentlyViewedOrgs(token: string, limit: number = 5): Promise<Organization[]> {
-    const res = await api.fetchWithAuth(`/api/admin/organizations/recently-viewed?limit=${limit}`, token)
+    const res = await api.fetchWithAuth(`/api/v1/admin/organizations/recently-viewed?limit=${limit}`, token)
     
     if (!res.ok) {
       throw new Error('Failed to fetch recently viewed organizations')
@@ -143,7 +145,7 @@ export const adminService = {
   },
 
   async recordOrgView(token: string, orgId: string) {
-    const res = await api.fetchWithAuth(`/api/admin/organizations/${orgId}/view`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/admin/organizations/${orgId}/view`, token, {
       method: 'POST'
     })
     
@@ -161,21 +163,23 @@ export const adminService = {
       throw new Error('Failed to fetch support tickets')
     }
     
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async getOrgTickets(token: string, orgId: string): Promise<SupportTicket[]> {
-    const res = await api.fetchWithAuth(`/api/admin/organizations/${orgId}/support-tickets`, token)
+    const res = await api.fetchWithAuth(`/api/v1/admin/organizations/${orgId}/support-tickets`, token)
     
     if (!res.ok) {
       throw new Error('Failed to fetch organization tickets')
     }
     
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async updateTicket(token: string, ticketId: string, updates: { status?: string; priority?: string }) {
-    const res = await api.fetchWithAuth(`/api/admin/support-tickets/${ticketId}`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/admin/support-tickets/${ticketId}`, token, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
@@ -190,17 +194,18 @@ export const adminService = {
   },
 
   async getNotifications(token: string, unreadOnly: boolean = false): Promise<AdminNotification[]> {
-    const res = await api.fetchWithAuth(`/api/admin/notifications?unread_only=${unreadOnly}`, token)
+    const res = await api.fetchWithAuth(`/api/v1/admin/notifications?unread_only=${unreadOnly}`, token)
     
     if (!res.ok) {
       throw new Error('Failed to fetch notifications')
     }
     
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async markNotificationRead(token: string, notificationId: string) {
-    const res = await api.fetchWithAuth(`/api/admin/notifications/${notificationId}/read`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/admin/notifications/${notificationId}/read`, token, {
       method: 'POST'
     })
     
@@ -224,12 +229,13 @@ export const adminService = {
   },
 
   async getOrgInvoices(token: string, orgId: string) {
-    const res = await api.fetchWithAuth(`/api/admin/organizations/${orgId}/invoices`, token)
+    const res = await api.fetchWithAuth(`/api/v1/admin/organizations/${orgId}/invoices`, token)
     
     if (!res.ok) {
       throw new Error('Failed to fetch organization invoices')
     }
     
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   }
 }
