@@ -17,8 +17,13 @@ export interface Organization {
   address: string
   city: string
   state: string
+  pincode: string
+  owner_id: string
   subscription_status: string
   subscription_plan: string
+  subscription_start: string | null
+  subscription_end: string | null
+  created_at: string | null
 }
 
 export interface Project {

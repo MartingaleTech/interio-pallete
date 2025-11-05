@@ -45,7 +45,7 @@ def create_project(db: Session, user: User, project: ProjectCreate):
         "budget": project.budget,
         "start_date": project.start_date,
         "end_date": project.end_date,
-        "created_at": datetime.utcnow()
+        "created_at": datetime.now(datetime.UTC)
     }
     db_project = project_repo.create(project_data)
     
@@ -115,7 +115,7 @@ def add_team_member_to_project(db: Session, user: User, project_id: str, member:
         "title": "New Team Member Added",
         "message": f"{db_user.name} has been added to the project as {member.role}",
         "is_read": False,
-        "created_at": datetime.utcnow()
+        "created_at": datetime.now(datetime.UTC)
     }
     notification_repo.create(notification_data)
     
@@ -165,7 +165,7 @@ def create_calendar_event_for_project(db: Session, user: User, project_id: str, 
         "start_time": event.start_time,
         "end_time": event.end_time,
         "attendees": event.attendees,
-        "created_at": datetime.utcnow()
+        "created_at": datetime.now(datetime.UTC)
     }
     db_event = calendar_repo.create(event_data)
     
@@ -214,7 +214,7 @@ def create_project_design(db: Session, user: User, project_id: str, design: Proj
         "file_url": design.file_url,
         "file_type": design.file_type,
         "uploaded_by": user.name,
-        "uploaded_at": datetime.utcnow()
+        "uploaded_at": datetime.now(datetime.UTC)
     }
     db_design = design_repo.create(design_data)
     

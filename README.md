@@ -187,7 +187,7 @@ Each interior design organization has its own isolated instance within the platf
 
 ### Prerequisites
 - Python 3.8+
-- Node.js 16+
+- Node.js 18+
 - Poetry (Python package manager)
 
 ### Backend Setup

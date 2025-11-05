@@ -23,7 +23,8 @@ def login_user(db: Session, credentials: UserLogin) -> Dict[str, Any]:
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
     token = create_token()
-    token_repo.create(token, db_user.id)
+    expires_at = datetime.now() + timedelta(days=30)
+    token_repo.create(token, db_user.id, expires_at)
     
     user = db_user_to_pydantic(db_user)
     
@@ -59,8 +60,7 @@ def request_phone_otp(db: Session, request: PhoneOTPRequest) -> Dict[str, Any]:
     
     return {
         "message": "OTP sent successfully",
-        "phone": request.phone,
-        "otp": otp
+        "phone": request.phone
     }
 
 
@@ -87,7 +87,8 @@ def verify_phone_otp(db: Session, request: PhoneOTPVerify) -> Dict[str, Any]:
         raise HTTPException(status_code=404, detail="User not found")
     
     token = create_token()
-    token_repo.create(token, db_user.id)
+    expires_at = datetime.now() + timedelta(days=30)
+    token_repo.create(token, db_user.id, expires_at)
     
     otp_repo.delete(request.phone)
     

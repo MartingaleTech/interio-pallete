@@ -181,7 +181,7 @@ class ChatService:
         
         room = self.room_repo.get_by_id(db, room_id)
         if room:
-            self.room_repo.update(db, room_id, {"updated_at": datetime.utcnow()})
+            self.room_repo.update(db, room_id, {"updated_at": datetime.now(datetime.UTC)})
         
         participants = self.participant_repo.get_participants(db, room_id)
         for participant in participants:
@@ -236,7 +236,7 @@ class ChatService:
         update_data = {
             "message": request.message,
             "is_edited": True,
-            "edited_at": datetime.utcnow()
+            "edited_at": datetime.now(datetime.UTC)
         }
         
         return self.message_repo.update(db, message_id, update_data)

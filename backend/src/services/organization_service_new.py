@@ -26,12 +26,12 @@ def create_organization(db: Session, org: OrganizationCreate):
         "name": org.owner_name,
         "role": UserRole.ORG_OWNER,
         "org_id": org_id,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(datetime.UTC),
         "phone": org.owner_phone
     }
     db_owner = user_repo.create(owner_data, hash_password(org.owner_password))
     
-    subscription_start = datetime.utcnow()
+    subscription_start = datetime.now(datetime.UTC)
     subscription_end = subscription_start + timedelta(days=365)
     
     org_data = {
@@ -48,7 +48,7 @@ def create_organization(db: Session, org: OrganizationCreate):
         "subscription_plan": org.subscription_plan,
         "subscription_start": subscription_start,
         "subscription_end": subscription_end,
-        "created_at": datetime.utcnow()
+        "created_at": datetime.now(datetime.UTC)
     }
     db_org = org_repo.create(org_data)
     
@@ -133,7 +133,7 @@ def add_organization_member(db: Session, org_id: str, member: OrgMemberCreate) -
         "name": member.name,
         "role": UserRole.ORG_MEMBER,
         "org_id": org_id,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(datetime.UTC),
         "phone": member.phone
     }
     db_member = user_repo.create(member_data, hash_password(member.password))
@@ -199,7 +199,7 @@ def add_member_to_user_org(db: Session, user: User, member: OrgMemberCreate) -> 
         "name": member_name,
         "role": member.role if member.role else UserRole.ORG_MEMBER,
         "org_id": user.org_id,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(datetime.UTC),
         "phone": member.phone,
         "first_name": first_name if first_name else None,
         "last_name": last_name if last_name else None

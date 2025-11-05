@@ -32,7 +32,7 @@ def create_project_notification(db: Session, user: User, project_id: str, notifi
         "title": notification.title,
         "message": notification.message,
         "is_read": False,
-        "created_at": datetime.utcnow()
+        "created_at": datetime.now(datetime.UTC)
     }
     db_notification = notification_repo.create(notification_data)
     

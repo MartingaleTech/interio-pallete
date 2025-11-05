@@ -44,7 +44,7 @@ export function VersionHistory({ fileId, token, isOpen, onClose, onVersionRestor
 
     setRestoring(versionId)
     try {
-      await fileService.restoreVersion(token, fileId, versionId)
+      await fileService.restoreVersion(token, versionId)
       alert('Version restored successfully!')
       fetchVersions()
       onVersionRestored()

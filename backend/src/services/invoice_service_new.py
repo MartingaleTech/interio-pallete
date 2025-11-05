@@ -35,7 +35,7 @@ def create_project_invoice(db: Session, user: User, project_id: str, invoice: In
         "total": invoice.amount + invoice.tax,
         "payment_status": PaymentStatus.PENDING,
         "due_date": invoice.due_date,
-        "created_at": datetime.utcnow()
+        "created_at": datetime.now(datetime.UTC)
     }
     db_invoice = invoice_repo.create(invoice_data)
     
@@ -83,7 +83,7 @@ def create_org_invoice(db: Session, org_id: str, invoice: OrgInvoiceCreate):
         "billing_period_start": invoice.billing_period_start,
         "billing_period_end": invoice.billing_period_end,
         "due_date": invoice.due_date,
-        "created_at": datetime.utcnow()
+        "created_at": datetime.now(datetime.UTC)
     }
     db_invoice = org_invoice_repo.create(invoice_data)
     

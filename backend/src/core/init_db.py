@@ -27,7 +27,7 @@ def init_db():
                 role=UserRole.ADMIN,
                 phone="9999999999",
                 password_hash=hash_password("admin123"),
-                created_at=datetime.utcnow()
+                created_at=datetime.now(datetime.UTC)
             )
             db.add(admin_data)
             db.commit()

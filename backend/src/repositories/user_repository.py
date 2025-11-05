@@ -69,17 +69,23 @@ class TokenRepository:
     def __init__(self, db: Session):
         self.db = db
     
-    def create(self, token: str, user_id: str) -> models.Token:
+    def create(self, token: str, user_id: str, expires_at) -> models.Token:
         """Create a new token."""
-        db_token = models.Token(token=token, user_id=user_id)
+        db_token = models.Token(token=token, user_id=user_id, expires_at=expires_at)
         self.db.add(db_token)
         self.db.commit()
         return db_token
     
     def get_user_id(self, token: str) -> Optional[str]:
-        """Get user ID for a token."""
+        """Get user ID for a token if it exists and hasn't expired."""
+        from datetime import datetime
         db_token = self.db.query(models.Token).filter(models.Token.token == token).first()
-        return db_token.user_id if db_token else None
+        if db_token and db_token.expires_at > datetime.now():
+            return db_token.user_id
+        elif db_token:
+            self.db.delete(db_token)
+            self.db.commit()
+        return None
     
     def delete(self, token: str) -> bool:
         """Delete a token."""
