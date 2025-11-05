@@ -1,4 +1,5 @@
 import { toItems } from './pagination'
+import { ProjectTicket, TeamMember } from '../types'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -80,13 +81,13 @@ export const projectService = {
     return res.json()
   },
 
-  async getProjectTickets(token: string, projectId: string) {
+  async getProjectTickets(token: string, projectId: string): Promise<ProjectTicket[]> {
     const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/tickets`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch tickets')
     const data = await res.json()
-    return toItems(data)
+    return toItems<ProjectTicket>(data)
   },
 
   async createProjectTicket(token: string, projectId: string, data: any) {
@@ -102,13 +103,13 @@ export const projectService = {
     return res.json()
   },
 
-  async getProjectTeam(token: string, projectId: string) {
+  async getProjectTeam(token: string, projectId: string): Promise<TeamMember[]> {
     const res = await fetch(`${API_URL}/api/v1/projects/${projectId}/team`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     if (!res.ok) throw new Error('Failed to fetch team members')
     const data = await res.json()
-    return toItems(data)
+    return toItems<TeamMember>(data)
   },
 
   async addTeamMember(token: string, projectId: string, data: any) {

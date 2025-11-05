@@ -48,7 +48,7 @@ class ChatRoomRepository:
         if room:
             for key, value in update_data.items():
                 setattr(room, key, value)
-            room.updated_at = datetime.utcnow()
+            room.updated_at = datetime.now(datetime.UTC)
             db.commit()
             db.refresh(room)
         return room
@@ -106,7 +106,7 @@ class ChatRoomParticipantRepository:
         """Update last read timestamp for participant"""
         participant = self.get_participant(db, room_id, user_id)
         if participant:
-            participant.last_read_at = datetime.utcnow()
+            participant.last_read_at = datetime.now(datetime.UTC)
             db.commit()
             return True
         return False
@@ -186,7 +186,7 @@ class ChatMessageRepository:
         if message:
             for key, value in update_data.items():
                 setattr(message, key, value)
-            message.updated_at = datetime.utcnow()
+            message.updated_at = datetime.now(datetime.UTC)
             db.commit()
             db.refresh(message)
         return message
@@ -196,7 +196,7 @@ class ChatMessageRepository:
         message = self.get_by_id(db, message_id)
         if message:
             message.is_deleted = True
-            message.deleted_at = datetime.utcnow()
+            message.deleted_at = datetime.now(datetime.UTC)
             message.deleted_for_everyone = delete_for_everyone
             db.commit()
             return True
@@ -288,11 +288,11 @@ class MessageReadReceiptRepository:
                 id=f"receipt_{message_id}_{user_id}",
                 message_id=message_id,
                 user_id=user_id,
-                delivered_at=datetime.utcnow()
+                delivered_at=datetime.now(datetime.UTC)
             )
             db.add(receipt)
         else:
-            receipt.delivered_at = datetime.utcnow()
+            receipt.delivered_at = datetime.now(datetime.UTC)
         db.commit()
         return True
     
@@ -304,12 +304,12 @@ class MessageReadReceiptRepository:
                 id=f"receipt_{message_id}_{user_id}",
                 message_id=message_id,
                 user_id=user_id,
-                delivered_at=datetime.utcnow(),
-                read_at=datetime.utcnow()
+                delivered_at=datetime.now(datetime.UTC),
+                read_at=datetime.now(datetime.UTC)
             )
             db.add(receipt)
         else:
-            receipt.read_at = datetime.utcnow()
+            receipt.read_at = datetime.now(datetime.UTC)
         db.commit()
         return True
 
@@ -329,7 +329,7 @@ class TypingStatusRepository:
         
         if existing:
             existing.is_typing = typing_data.get("is_typing", True)
-            existing.updated_at = datetime.utcnow()
+            existing.updated_at = datetime.now(datetime.UTC)
             db.commit()
             db.refresh(existing)
             return existing
@@ -363,7 +363,7 @@ class TypingStatusRepository:
         status = query.first()
         if status:
             status.is_typing = False
-            status.updated_at = datetime.utcnow()
+            status.updated_at = datetime.now(datetime.UTC)
             db.commit()
             return True
         return False
@@ -402,7 +402,7 @@ class ChatNotificationSettingsRepository:
         if settings:
             for key, value in update_data.items():
                 setattr(settings, key, value)
-            settings.updated_at = datetime.utcnow()
+            settings.updated_at = datetime.now(datetime.UTC)
             db.commit()
             db.refresh(settings)
         return settings

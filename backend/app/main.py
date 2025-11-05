@@ -37,7 +37,7 @@ app.add_middleware(RequestIDMiddleware)
 app.add_middleware(RateLimitMiddleware, requests_per_minute=60)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -49,7 +49,10 @@ app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
-initialize_admin_user()
+@app.on_event("startup")
+async def startup_event():
+    """Initialize application on startup."""
+    initialize_admin_user()
 
 app.include_router(auth_router)
 app.include_router(admin_router)
@@ -67,9 +70,9 @@ app.include_router(daily_update_router)
 app.include_router(file_management_router)
 app.include_router(chat_router)
 
-if storage_config.USE_LOCAL_STORAGE:
-    os.makedirs(storage_config.LOCAL_STORAGE_PATH, exist_ok=True)
-    app.mount("/files", StaticFiles(directory=storage_config.LOCAL_STORAGE_PATH), name="files")
+# if storage_config.USE_LOCAL_STORAGE:
+#     os.makedirs(storage_config.LOCAL_STORAGE_PATH, exist_ok=True)
+#     app.mount("/files", StaticFiles(directory=storage_config.LOCAL_STORAGE_PATH), name="files")
 
 
 @app.get("/healthz")

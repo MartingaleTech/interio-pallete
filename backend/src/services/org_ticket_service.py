@@ -38,8 +38,8 @@ def create_org_ticket(db: Session, user: User, ticket: OrgTicketCreate):
         "ticket_type": ticket.ticket_type,
         "status": TicketStatus.OPEN,
         "priority": ticket.priority,
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow()
+        "created_at": datetime.now(datetime.UTC),
+        "updated_at": datetime.now(datetime.UTC)
     }
     db_ticket = ticket_repo.create(ticket_data)
     
@@ -122,10 +122,10 @@ def update_org_ticket(db: Session, user: User, ticket_id: str, update: OrgTicket
         raise HTTPException(status_code=403, detail="Access denied")
     
     update_data = update.model_dump(exclude_unset=True)
-    update_data["updated_at"] = datetime.utcnow()
+    update_data["updated_at"] = datetime.now(datetime.UTC)
     
     if update.status == TicketStatus.RESOLVED and not db_ticket.resolved_at:
-        update_data["resolved_at"] = datetime.utcnow()
+        update_data["resolved_at"] = datetime.now(datetime.UTC)
     
     db_ticket = ticket_repo.update(ticket_id, update_data)
     return db_org_ticket_to_pydantic(db_ticket)
@@ -175,12 +175,12 @@ def add_org_ticket_comment(db: Session, user: User, ticket_id: str, comment: Tic
         "user_id": user.id,
         "comment": comment.comment,
         "is_internal": comment.is_internal,
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow()
+        "created_at": datetime.now(datetime.UTC),
+        "updated_at": datetime.now(datetime.UTC)
     }
     db_comment = comment_repo.create(comment_data)
     
-    ticket_repo.update(ticket_id, {"updated_at": datetime.utcnow()})
+    ticket_repo.update(ticket_id, {"updated_at": datetime.now(datetime.UTC)})
     
     return db_ticket_comment_to_pydantic(db_comment)
 
@@ -211,11 +211,11 @@ def add_org_ticket_attachment(db: Session, user: User, ticket_id: str, attachmen
         "file_url": attachment.file_url,
         "file_type": attachment.file_type,
         "file_size": attachment.file_size,
-        "created_at": datetime.utcnow()
+        "created_at": datetime.now(datetime.UTC)
     }
     db_attachment = attachment_repo.create(attachment_data)
     
-    ticket_repo.update(ticket_id, {"updated_at": datetime.utcnow()})
+    ticket_repo.update(ticket_id, {"updated_at": datetime.now(datetime.UTC)})
     
     return db_ticket_attachment_to_pydantic(db_attachment)
 

@@ -28,7 +28,7 @@ def add_client(db: Session, user: User, client: ClientCreate):
         "email": client.email,
         "phone": client.phone,
         "address": client.address,
-        "created_at": datetime.utcnow()
+        "created_at": datetime.now(datetime.UTC)
     }
     db_client = client_repo.create(client_data)
     
@@ -39,7 +39,7 @@ def add_client(db: Session, user: User, client: ClientCreate):
         "name": client.name,
         "role": UserRole.CLIENT,
         "phone": client.phone,
-        "created_at": datetime.utcnow()
+        "created_at": datetime.now(datetime.UTC)
     }
     user_repo.create(user_data, hash_password(client.password))
     

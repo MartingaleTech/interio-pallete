@@ -31,8 +31,8 @@ def create_project_daily_update(db: Session, user: User, project_id: str, update
         "user_name": user.name,
         "update_text": update.update_text,
         "attachments": update.attachments,
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow()
+        "created_at": datetime.now(datetime.UTC),
+        "updated_at": datetime.now(datetime.UTC)
     }
     db_update = update_repo.create(update_data)
     
@@ -100,7 +100,7 @@ def update_project_daily_update(db: Session, user: User, update_id: str, update_
     if update_data.attachments is not None:
         db_update.attachments = update_data.attachments
     
-    db_update.updated_at = datetime.utcnow()
+    db_update.updated_at = datetime.now(datetime.UTC)
     db_update = update_repo.update(db_update)
     
     return db_project_daily_update_to_pydantic(db_update)

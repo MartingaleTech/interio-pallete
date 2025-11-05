@@ -157,7 +157,9 @@ export function OrgDashboard({ orgId, token, onBack }: OrgDashboardProps) {
                 <div>
                   <p className="text-sm text-gray-500">Subscription Period</p>
                   <p className="text-sm">
-                    {new Date(org.subscription_start).toLocaleDateString()} - {new Date(org.subscription_end).toLocaleDateString()}
+                    {org.subscription_start && org.subscription_end 
+                      ? `${new Date(org.subscription_start).toLocaleDateString()} - ${new Date(org.subscription_end).toLocaleDateString()}`
+                      : 'Not set'}
                   </p>
                 </div>
               </CardContent>
