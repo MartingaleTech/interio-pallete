@@ -53,8 +53,8 @@ class FileCommentService:
             "parent_comment_id": parent_comment_id,
             "mentions": ",".join(mentions) if mentions else None,
             "is_resolved": False,
-            "created_at": datetime.now(datetime.UTC),
-            "updated_at": datetime.now(datetime.UTC)
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
         }
         
         comment = self.comment_repo.create(comment_data)
@@ -90,7 +90,7 @@ class FileCommentService:
         update_data = {
             "comment": comment_text,
             "mentions": ",".join(mentions) if mentions else None,
-            "updated_at": datetime.now(datetime.UTC)
+            "updated_at": datetime.now(timezone.utc)
         }
         
         updated_comment = self.comment_repo.update(comment_id, update_data)
@@ -204,8 +204,8 @@ class FileCommentService:
         update_data = {
             "is_resolved": is_resolved,
             "resolved_by": user_id if is_resolved else None,
-            "resolved_at": datetime.now(datetime.UTC) if is_resolved else None,
-            "updated_at": datetime.now(datetime.UTC)
+            "resolved_at": datetime.now(timezone.utc) if is_resolved else None,
+            "updated_at": datetime.now(timezone.utc)
         }
         
         return self.comment_repo.update(comment_id, update_data)
