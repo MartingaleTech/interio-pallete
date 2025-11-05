@@ -11,12 +11,14 @@ import {
   InvoiceFormData,
   OrgTeamMemberFormData
 } from '../types'
+import { toItems } from './pagination'
 
 export const organizationService = {
   async getProjects(token: string): Promise<Project[]> {
     const res = await api.fetchWithAuth('/api/v1/organizations/projects', token)
     if (!res.ok) throw new Error('Failed to fetch projects')
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async createProject(token: string, data: ProjectFormData) {
@@ -38,7 +40,8 @@ export const organizationService = {
   async getClients(token: string): Promise<Client[]> {
     const res = await api.fetchWithAuth('/api/v1/organizations/clients', token)
     if (!res.ok) throw new Error('Failed to fetch clients')
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async createClient(token: string, data: ClientFormData) {
@@ -57,11 +60,12 @@ export const organizationService = {
   async getTeamMembers(token: string): Promise<TeamMember[]> {
     const res = await api.fetchWithAuth('/api/v1/organizations/members', token)
     if (!res.ok) throw new Error('Failed to fetch team members')
-    return res.json()
+    const data = await res.json()
+    return toItems(data)
   },
 
   async addProjectTeamMember(token: string, projectId: string, data: Omit<TeamMemberFormData, 'project_id'>) {
-    const res = await api.fetchWithAuth(`/api/organizations/projects/${projectId}/team`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/projects/${projectId}/team`, token, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -87,7 +91,7 @@ export const organizationService = {
   },
 
   async updateTeamMember(token: string, memberId: string, data: OrgTeamMemberFormData) {
-    const res = await api.fetchWithAuth(`/api/organizations/members/${memberId}`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/organizations/members/${memberId}`, token, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -100,7 +104,7 @@ export const organizationService = {
   },
 
   async removeTeamMember(token: string, memberId: string) {
-    const res = await api.fetchWithAuth(`/api/organizations/members/${memberId}`, token, {
+    const res = await api.fetchWithAuth(`/api/v1/organizations/members/${memberId}`, token, {
       method: 'DELETE'
     })
     if (!res.ok) {
