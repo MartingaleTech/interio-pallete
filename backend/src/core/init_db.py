@@ -1,5 +1,5 @@
 """Initialize database with default admin user."""
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from sqlalchemy.orm import Session
 from src.config.database import engine, Base, SessionLocal

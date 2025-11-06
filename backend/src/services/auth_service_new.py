@@ -6,6 +6,7 @@ from src.models import UserLogin, PhoneOTPRequest, PhoneOTPVerify
 from src.repositories import UserRepository, TokenRepository, OTPRepository
 from src.utils import verify_password, create_token, generate_otp, send_otp_sms
 from src.utils.mappers import db_user_to_pydantic
+from src.config.settings import settings
 
 
 def login_user(db: Session, credentials: UserLogin) -> Dict[str, Any]:
@@ -58,10 +59,15 @@ def request_phone_otp(db: Session, request: PhoneOTPRequest) -> Dict[str, Any]:
     
     send_otp_sms(request.phone, otp)
     
-    return {
+    response = {
         "message": "OTP sent successfully",
         "phone": request.phone
     }
+    
+    if settings.debug:
+        response["otp"] = otp
+    
+    return response
 
 
 def verify_phone_otp(db: Session, request: PhoneOTPVerify) -> Dict[str, Any]:

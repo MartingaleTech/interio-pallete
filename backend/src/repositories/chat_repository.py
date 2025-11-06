@@ -5,7 +5,7 @@ Handles data access for chat-related operations
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc, func
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from src.database.models import (
     ChatRoom, ChatRoomParticipant, ChatMessage, 
     MessageReadReceipt, TypingStatus, ChatNotificationSettings

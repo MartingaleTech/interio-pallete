@@ -6,7 +6,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 from typing import Dict, Set, Optional, List
 import json
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 from src.models.chat import WSMessage, WSMessageType, WSErrorMessage

@@ -1,7 +1,7 @@
 import uuid
 import re
 from typing import List, Optional, Dict
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from src.database import models
