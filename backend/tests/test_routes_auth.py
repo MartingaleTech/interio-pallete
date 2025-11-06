@@ -3,49 +3,15 @@ Comprehensive tests for authentication routes.
 Tests all endpoints in src/routes/auth.py
 """
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 import uuid
 
-from app.main import app
-from src.config.database import Base, get_db
 from src.database import models
 from src.utils.security import hash_password
 
 
-@pytest.fixture(scope="function")
-def test_db():
-    """Create a test database session."""
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
-    SessionLocal = sessionmaker(bind=engine)
-    session = SessionLocal()
-    
-    yield session
-    
-    session.close()
-    Base.metadata.drop_all(engine)
-
-
 @pytest.fixture
-def client(test_db):
-    """Create a test client with database override."""
-    def override_get_db():
-        try:
-            yield test_db
-        finally:
-            pass
-    
-    app.dependency_overrides[get_db] = override_get_db
-    test_client = TestClient(app)
-    yield test_client
-    app.dependency_overrides.clear()
-
-
-@pytest.fixture
-def test_user(test_db):
+def test_user(db_session):
     """Create a test user."""
     user = models.User(
         id=str(uuid.uuid4()),
@@ -55,22 +21,22 @@ def test_user(test_db):
         phone="1234567890",
         password_hash=hash_password("password123")
     )
-    test_db.add(user)
-    test_db.commit()
-    test_db.refresh(user)
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
     return user
 
 
 @pytest.fixture
-def test_token(test_db, test_user):
+def test_token(db_session, test_user):
     """Create a test token."""
     token = models.Token(
         token="test_token_123",
         user_id=test_user.id,
         expires_at=datetime.now() + timedelta(days=1)
     )
-    test_db.add(token)
-    test_db.commit()
+    db_session.add(token)
+    db_session.commit()
     return token
 
 
@@ -168,8 +134,8 @@ class TestAuthGetMe:
             user_id=test_user.id,
             expires_at=datetime.now() - timedelta(days=1)
         )
-        test_db.add(expired_token)
-        test_db.commit()
+        db_session.add(expired_token)
+        db_session.commit()
         
         response = client.get(
             "/api/v1/auth/me",
@@ -244,7 +210,7 @@ class TestPhoneOTP:
             json={"phone": phone}
         )
         
-        otp_record = test_db.query(models.OTP).filter(
+        otp_record = db_session.query(models.OTP).filter(
             models.OTP.phone == phone
         ).first()
         

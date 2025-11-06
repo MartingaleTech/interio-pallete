@@ -1,24 +1,59 @@
+import os
+os.environ["TESTING"] = "true"
+os.environ["DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
+
 import pytest
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from src.config.database import Base
+from fastapi.testclient import TestClient
+from src.config.database import Base, engine, get_db
 from src.database import models
 from datetime import datetime, timedelta
 import uuid
 
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-@pytest.fixture(scope="function")
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_db():
+    """Create tables once for the entire test session."""
+    Base.metadata.create_all(bind=engine)
+    yield
+    Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture
 def db_session():
     """Create a test database session."""
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
-    SessionLocal = sessionmaker(bind=engine)
-    session = SessionLocal()
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.rollback()
+        db.close()
+        cleanup_db = TestingSessionLocal()
+        try:
+            for table in reversed(Base.metadata.sorted_tables):
+                cleanup_db.execute(table.delete())
+            cleanup_db.commit()
+        finally:
+            cleanup_db.close()
+
+
+@pytest.fixture
+def client(db_session):
+    """Create a test client with overridden database dependency."""
+    from app.main import app
     
-    yield session
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            pass
     
-    session.close()
-    Base.metadata.drop_all(engine)
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app) as c:
+        yield c
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture

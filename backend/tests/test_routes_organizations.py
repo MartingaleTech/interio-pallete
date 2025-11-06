@@ -3,49 +3,15 @@ Comprehensive tests for organization routes.
 Tests all endpoints in src/routes/organizations.py
 """
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 import uuid
 
-from app.main import app
-from src.config.database import Base, get_db
 from src.database import models
 from src.utils.security import hash_password
 
 
-@pytest.fixture(scope="function")
-def test_db():
-    """Create a test database session."""
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
-    SessionLocal = sessionmaker(bind=engine)
-    session = SessionLocal()
-    
-    yield session
-    
-    session.close()
-    Base.metadata.drop_all(engine)
-
-
 @pytest.fixture
-def client(test_db):
-    """Create a test client with database override."""
-    def override_get_db():
-        try:
-            yield test_db
-        finally:
-            pass
-    
-    app.dependency_overrides[get_db] = override_get_db
-    test_client = TestClient(app)
-    yield test_client
-    app.dependency_overrides.clear()
-
-
-@pytest.fixture
-def test_org_owner(test_db):
+def test_org_owner(db_session):
     """Create a test organization owner."""
     user = models.User(
         id=str(uuid.uuid4()),
@@ -55,14 +21,14 @@ def test_org_owner(test_db):
         phone="1234567890",
         password_hash=hash_password("password123")
     )
-    test_db.add(user)
-    test_db.commit()
-    test_db.refresh(user)
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
     return user
 
 
 @pytest.fixture
-def test_organization(test_db, test_org_owner):
+def test_organization(db_session, test_org_owner):
     """Create a test organization."""
     org = models.Organization(
         id=str(uuid.uuid4()),
@@ -79,27 +45,27 @@ def test_organization(test_db, test_org_owner):
         subscription_start=datetime.now(),
         subscription_end=datetime.now() + timedelta(days=30)
     )
-    test_db.add(org)
-    test_db.commit()
-    test_db.refresh(org)
+    db_session.add(org)
+    db_session.commit()
+    db_session.refresh(org)
     
     test_org_owner.org_id = org.id
-    test_db.commit()
-    test_db.refresh(test_org_owner)
+    db_session.commit()
+    db_session.refresh(test_org_owner)
     
     return org
 
 
 @pytest.fixture
-def owner_token(test_db, test_org_owner):
+def owner_token(db_session, test_org_owner):
     """Create a test token for org owner."""
     token = models.Token(
         token="owner_token_123",
         user_id=test_org_owner.id,
         expires_at=datetime.now() + timedelta(days=1)
     )
-    test_db.add(token)
-    test_db.commit()
+    db_session.add(token)
+    db_session.commit()
     return token
 
 
@@ -167,8 +133,8 @@ class TestOrganizationMembers:
             password_hash=hash_password("password123"),
             org_id=test_organization.id
         )
-        test_db.add(member)
-        test_db.commit()
+        db_session.add(member)
+        db_session.commit()
         
         response = client.put(
             f"/api/v1/organizations/members/{member.id}",
@@ -195,8 +161,8 @@ class TestOrganizationMembers:
             password_hash=hash_password("password123"),
             org_id=test_organization.id
         )
-        test_db.add(member)
-        test_db.commit()
+        db_session.add(member)
+        db_session.commit()
         
         response = client.delete(
             f"/api/v1/organizations/members/{member.id}",
@@ -233,16 +199,16 @@ class TestSupportTickets:
             phone="1234567890",
             password_hash=hash_password("password123")
         )
-        test_db.add(user)
-        test_db.commit()
+        db_session.add(user)
+        db_session.commit()
         
         token = models.Token(
             token="noorg_token_123",
             user_id=user.id,
             expires_at=datetime.now() + timedelta(days=1)
         )
-        test_db.add(token)
-        test_db.commit()
+        db_session.add(token)
+        db_session.commit()
         
         response = client.post(
             "/api/v1/organizations/support-tickets",

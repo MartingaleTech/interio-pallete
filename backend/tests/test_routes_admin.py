@@ -3,49 +3,15 @@ Comprehensive tests for admin routes.
 Tests all endpoints in src/routes/admin.py
 """
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 import uuid
 
-from app.main import app
-from src.config.database import Base, get_db
 from src.database import models
 from src.utils.security import hash_password
 
 
-@pytest.fixture(scope="function")
-def test_db():
-    """Create a test database session."""
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
-    SessionLocal = sessionmaker(bind=engine)
-    session = SessionLocal()
-    
-    yield session
-    
-    session.close()
-    Base.metadata.drop_all(engine)
-
-
 @pytest.fixture
-def client(test_db):
-    """Create a test client with database override."""
-    def override_get_db():
-        try:
-            yield test_db
-        finally:
-            pass
-    
-    app.dependency_overrides[get_db] = override_get_db
-    test_client = TestClient(app)
-    yield test_client
-    app.dependency_overrides.clear()
-
-
-@pytest.fixture
-def test_admin(test_db):
+def test_admin(db_session):
     """Create a test admin user."""
     admin = models.User(
         id=str(uuid.uuid4()),
@@ -55,27 +21,27 @@ def test_admin(test_db):
         phone="9999999999",
         password_hash=hash_password("admin123")
     )
-    test_db.add(admin)
-    test_db.commit()
-    test_db.refresh(admin)
+    db_session.add(admin)
+    db_session.commit()
+    db_session.refresh(admin)
     return admin
 
 
 @pytest.fixture
-def admin_token(test_db, test_admin):
+def admin_token(db_session, test_admin):
     """Create a test admin token."""
     token = models.Token(
         token="admin_token_123",
         user_id=test_admin.id,
         expires_at=datetime.now() + timedelta(days=1)
     )
-    test_db.add(token)
-    test_db.commit()
+    db_session.add(token)
+    db_session.commit()
     return token
 
 
 @pytest.fixture
-def test_organization(test_db, test_admin):
+def test_organization(db_session, test_admin):
     """Create a test organization."""
     org = models.Organization(
         id=str(uuid.uuid4()),
@@ -92,9 +58,9 @@ def test_organization(test_db, test_admin):
         subscription_start=datetime.now(),
         subscription_end=datetime.now() + timedelta(days=30)
     )
-    test_db.add(org)
-    test_db.commit()
-    test_db.refresh(org)
+    db_session.add(org)
+    db_session.commit()
+    db_session.refresh(org)
     return org
 
 
@@ -226,8 +192,8 @@ class TestAdminOrganizationMembers:
             password_hash=hash_password("password123"),
             org_id=test_organization.id
         )
-        test_db.add(member)
-        test_db.commit()
+        db_session.add(member)
+        db_session.commit()
         
         response = client.delete(
             f"/api/v1/admin/organizations/{test_organization.id}/members/{member.id}",
@@ -334,8 +300,8 @@ class TestAdminSupportTickets:
             status=models.TicketStatus.OPEN,
             priority=models.TicketPriority.MEDIUM
         )
-        test_db.add(ticket)
-        test_db.commit()
+        db_session.add(ticket)
+        db_session.commit()
         
         response = client.patch(
             f"/api/v1/admin/support-tickets/{ticket.id}",
@@ -375,8 +341,8 @@ class TestAdminNotifications:
             message="Test Message",
             is_read=False
         )
-        test_db.add(notification)
-        test_db.commit()
+        db_session.add(notification)
+        db_session.commit()
         
         response = client.post(
             f"/api/v1/admin/notifications/{notification.id}/read",

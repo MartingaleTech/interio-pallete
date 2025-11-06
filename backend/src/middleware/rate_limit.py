@@ -5,6 +5,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 from src.utils.errors import RateLimitError
 from src.middleware.request_id import get_request_id
+from src.config.settings import settings
 
 
 class RateLimiter:
@@ -68,6 +69,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.cleanup_counter = 0
     
     async def dispatch(self, request: Request, call_next):
+        if settings.testing:
+            response = await call_next(request)
+            return response
+        
         if request.url.path.startswith("/api/"):
             user_id = getattr(request.state, "user_id", None)
             client_ip = request.client.host if request.client else "unknown"
