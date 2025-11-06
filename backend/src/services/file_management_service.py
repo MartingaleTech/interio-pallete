@@ -1,7 +1,7 @@
 import uuid
 import json
 from typing import List, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
 
